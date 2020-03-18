@@ -35,8 +35,8 @@
 
 /* Rules for OpenLayers map */
 .map {
-height: 600px;
-width: 100%;
+    height: 600px;
+    width: 100%;  
 }
 
 /* Hide OpenLayers Attribution on map */
