@@ -33,17 +33,18 @@
 /* End of rules for CTPS "branding" */
 
 
-
-/* The following overrides jQueryUI ui-widget class size of "1.2em" */
-.ui-widget {
-	font-size: 12px;
+/* Rules for OpenLayers map */
+.map {
+height: 600px;
+width: 100%;
 }
-.combo_box_class {
-	 width: 160px;                  
-}
-
 
 /* Hide OpenLayers Attribution on map */
 .ol-attribution {
 	display: none;
+}
+
+/* In case we use jQueryUI, the following overrides jQueryUI ui-widget class size of "1.2em" */
+.ui-widget {
+	font-size: 12px;
 }
