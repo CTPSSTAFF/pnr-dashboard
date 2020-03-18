@@ -1,15 +1,38 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Park-and-Ride Data Dashboard</title>
-    <link rel="stylesheet" src="libs/openlayers-6.1.0-ol.css" type="text/css">
-    <script src="libs/jquery-3.4.1.js"></script>
-    <script src="libs/openlayers-6.1.0-ol.js"></script>
-    <title>Park-and-Ride Data Dashboard</title>
-  </head>
-  <body>
-    <h2>Park-and-Ride Data Dashboard</h2>
-    <div id="map" class="map"></div>
-    <script src="pnrDashboard.js"></script>
-  </body>
+    <head>
+        <meta charset="utf-8">
+        <title>Park-and-Ride Data Dashboard</title>       
+        <link rel="stylesheet" src="libs/openlayers-6.1.0-ol.css" type="text/css"> 
+        <link rel="stylesheet" href="pnrDashboard.css" type="text/css">       
+        <script src="libs/jquery-3.4.1.js"></script>        
+        <script src="libs/openlayers-6.1.0-ol.js"></script>        
+        <script src="pnrDashboard.js"></script>
+    	<script type="text/javascript">	 
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-39489988-1']);
+            _gaq.push(['_setDomainName', 'ctps.org']);
+            _gaq.push(['_setAllowLinker', true]);
+            _gaq.push(['_trackPageview']);
+         
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+	    </script>
+        <title>Park-and-Ride Data Dashboard</title>
+    </head>
+    <body>
+        <div class="ctpsHeader">
+            <div class="lightBlue"></div>
+            <div class="darkBlue"></div>
+            <div id="banner"><a href="https://www.ctps.org/" target="_blank" title="Boston MPO"><img style="height:59px"    src="images/ctps_header.png"     title="Opens Boston MPO website in a new window"></a></div>
+        </div>
+        <h2>Park-and-Ride Data Dashboard</h2>
+        <div id="map" class="map"></div>
+        <script> 
+            $(document).ready(function() { initialize(); });
+        </script>
+    </body>
 </html>
