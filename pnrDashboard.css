@@ -32,10 +32,14 @@
 }
 /* End of rules for CTPS "branding" */
 
+#map_controls {
+    margin-bottom: 20px;
+}
+
 
 /* Rules for OpenLayers map */
 .map {
-    height: 600px;
+    height: 700px;
     width: 100%;  
 }
 
