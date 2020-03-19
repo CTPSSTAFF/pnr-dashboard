@@ -34,6 +34,21 @@
             </div>
         </div>
         <h2>Park-and-Ride Data Dashboard</h2>
+        
+        <div id="map_controls">
+            <span>
+                Select basemap:&nbsp;
+                <input type="radio" id="osm_basemap" name="basemap" class="basemap_radio" value="osm_basemap" checked>
+                <label for="osm_basemap">Open Street Map</label>       
+                <input type="radio" id="massgis_basemap" name="basemap" class="basemap_radio" value="massgis_basemap">
+                <label for="massgis_basemap">MassGIS</label>
+                &nbsp;&nbsp;&nbsp;Select an MBTA station:&nbsp;
+                <select id="mbta_stations">
+                    <option value="0">Select a station</option>
+                </select>
+            </span>
+        </div>
+        
         <div id="map" class="map"></div>
         <script> 
             $(document).ready(function() { initialize(); });
