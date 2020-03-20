@@ -1,7 +1,6 @@
 // Park-and-Ride Data Browser
 //
-// The entire contents of this file are logically contained within 
-// the scope of the index.html's $(document).ready event handler.
+
 
 // URLs for MassGIS basemap layer services
 var mgis_serviceUrls = { 
@@ -63,7 +62,62 @@ function toggle_basemap(e) {
 function details_for_station(e) {
     var value = $("#mbta_stations").val();
     var text = $("#mbta_stations option:selected").text();
-    console.log("And now, we're going to do some cool stuff with the data for " + text + " station!");
+    
+    // Submit WFS request to get data for station, and pan/zoom map to it.
+    // Note that these are *point* features.
+	var cqlFilter = "(station='" + text + "')";
+	var szUrl = szWFSserverRoot + '?';
+		szUrl += '&service=wfs';
+		szUrl += '&version=1.0.0';
+		szUrl += '&request=getfeature';
+		szUrl += '&typename=ctps_pg:mgis_mbta_node';
+		szUrl += '&srsname=EPSG:3857';              // NOTE: We reproject the native geometry of the feature to the SRS of the map.
+		szUrl += '&outputformat=json';
+		szUrl += '&cql_filter=' + cqlFilter;
+        
+	$.ajax({ url		: szUrl,
+			 type		: 'GET',
+			 dataType	: 'json',
+			 success	: 	function (data, textStatus, jqXHR) {	
+                                var reader, aFeatures = [], props = {}, point, coordds, view, size;
+								reader = new ol.format.GeoJSON();
+								aFeatures = reader.readFeatures(jqXHR.responseText);
+								if (aFeatures.length === 0) {
+									alert('WFS request to get data for station ' + text + ' returned no features.');
+									return;
+								} else if (aFeatures.length > 1) {
+                                    alert('WFS request to get data for station ' + text + ' returned ' + aFeatures.length + ' features.');
+                                    return;
+                                }
+                                props = aFeatures[0].getProperties();
+                                // We center the map on the feature.
+                                // Since it is a point feature, we arbitrarily choose a zoom level of 16. 
+                                point = aFeatures[0].getGeometry();
+                                coords = point.getCoordinates();                               
+                                view = ol_map.getView();                               
+                                size = ol_map.getSize();
+                                view.centerOn(coords, size, [ size[0]/2, size[1]/2 ]);
+                                view.setZoom(16);
+                                // For the time being just dump some attribute info into the "output_div."
+                                // This is, obviously, not what we'll be doing in the finished product.
+                                // First, lear output_div before putting the newly fethed data into it.
+                                $('#output_div').html(''); 
+                                var tmp;
+                                tmp = '<h3>Data for ' + props['station'] + 'Station</h3>';
+                                tmp += '<p>Line: ' + props['line'] + '<\p>';
+                                tmp += '<p>Route: ' + props['route'] + '<\p>';
+                                tmp += '<p>';
+                                tmp += props['terminus'] === 'T' ? 'This is a terminal station' : 'This is not a terminal station.';
+                                tmp += '<\p>'
+                                $('#output_div').html(tmp);   
+                            }, // success handler
+            error       :   function (qXHR, textStatus, errorThrown ) {
+								alert('WFS request to get data for ' + text + 'failed.\n' +
+										'Status: ' + textStatus + '\n' +
+										'Error:  ' + errorThrown);
+							} // error handler 
+    });
+    
 } // details_for_station()
 
 
@@ -76,7 +130,7 @@ function initialize() {
     // 1. Initialize OpenLayers map, gets MassGIS basemap service properties by executing AJAX request
     $.ajax({ url: mgis_serviceUrls['topo_features'], jsonp: 'callback', dataType: 'jsonp', data: { f: 'json' }, 
              success: function(config) {     
-                  
+        // Body of "success" handler starts here.
         // Get resolutions
         var tileInfo = config.tileInfo;
         var resolutions = [];
@@ -159,18 +213,15 @@ function initialize() {
                                        ],
                                target: 'map',
                                view:   new ol.View({ center: ol.proj.fromLonLat([-71.0589, 42.3601]), zoom: 11 })
-
                             });              
-    } });
+    }});
     
-    // 2. Populate combo box of MBTA rapid transit stations, execute WFS request via AJAX to get relevant data
-	var cqlFilter = "";                         // Not used in this WFS request
+    // 2. Populate combo box of MBTA rapid transit stations, submit WFS request via AJAX to get relevant data
 	var szUrl = szWFSserverRoot + '?';
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
 		szUrl += '&typename=ctps_pg:mgis_mbta_node';
-		szUrl += '&srsname=EPSG:4326';          // If needed: reproject from native SRS of data (EPSG:26986) to EPSG:4326
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
@@ -190,8 +241,11 @@ function initialize() {
                                     aStationNames.push(props['station']);
                                 }
                                 aStationNames.sort();
+                                // The data really should contain some kind of unique per-record ID.
+                                // Not sure if the ESRI-assigned OBJECTID will really cut it.
+                                // So, simply assinging a unique integer ID, starting with 1.
                                 for (i = 0; i < aStationNames.length; i++) {
-                                    $('#mbta_stations').append($('<option>', { value: aStationNames[i],     // We really should put an ID # here
+                                    $('#mbta_stations').append($('<option>', { value: i+1,     
                                                                                text : aStationNames[i]  }));  
                                 }
                             }, // success handler
@@ -201,12 +255,10 @@ function initialize() {
 										'Error:  ' + errorThrown);
 							} // error handler
     });
-    
-    
+       
     // 3. Arm event handlers for UI controls
     // Arm event handler for basemap selection
     $(".basemap_radio").change(toggle_basemap);
     // Arm on-change event handler for combo box of MBTA stations
     $("#mbta_stations").change(details_for_station);
-
 } // initialize()
