@@ -58,7 +58,7 @@ function toggle_basemap(e) {
 
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
-    var value = $("#mbta_stations").val();
+    var value = +$("#mbta_stations").val();
     var text = $("#mbta_stations option:selected").text();
     
     // Submit WFS request to get data for station, and pan/zoom map to it.
@@ -77,7 +77,7 @@ function details_for_station(e) {
 			 type		: 'GET',
 			 dataType	: 'json',
 			 success	: 	function (data, textStatus, jqXHR) {	
-                                var reader, aFeatures = [], props = {}, point, coordds, view, size;
+                                var reader, aFeatures = [], props = {}, point, coords, view, size;
 								reader = new ol.format.GeoJSON();
 								aFeatures = reader.readFeatures(jqXHR.responseText);
 								if (aFeatures.length === 0) {
@@ -235,13 +235,14 @@ function initialize() {
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
 		szUrl += '&typename=ctps_pg:mgis_mbta_node';
+        szUrl += '&propertyname=station';  // The only attribute we need to populate the combo box is the station name
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
 			 type		: 'GET',
 			 dataType	: 'json',
 			 success	: 	function (data, textStatus, jqXHR) {	
-								var reader = {}, aFeatures = [], i, props, aStationNames = [];
+								var reader = {}, aFeatures = [], i, props, aStationNames = [], tmp, feature_id, stn_name;
                                 reader = new ol.format.GeoJSON();
 								aFeatures = reader.readFeatures(jqXHR.responseText);
 								if (aFeatures.length === 0) {
@@ -250,16 +251,23 @@ function initialize() {
 								}  
                                 // Get an alphabetically sorted array of station names
                                 for (i = 0; i < aFeatures.length; i++) {
+                                    tmp = { 'id' : 0, 'station' : '' };
+                                    // The following statement is a temp hack to get a feature_id...
+                                    feature_id = +aFeatures[i].id_.replace('mgis_mbta_node.','');
                                     props = aFeatures[i].getProperties();
-                                    aStationNames.push(props['station']);
+                                    stn_name = props['station'];
+                                    tmp.id = feature_id;
+                                    tmp.station = stn_name;
+                                    aStationNames.push(tmp);
                                 }
-                                aStationNames.sort();
-                                // The data really should contain some kind of unique per-record ID.
-                                // Not sure if the ESRI-assigned OBJECTID will really cut it.
-                                // So, simply assinging a unique integer ID, starting with 1.
+                                aStationNames.sort(function(a,b) { 
+                                    if(a.station < b.station) { return -1; }
+                                    if(a.station > b.station) { return 1; }
+                                    return 0;
+                                });
                                 for (i = 0; i < aStationNames.length; i++) {
-                                    $('#mbta_stations').append($('<option>', { value: i+1,     
-                                                                               text : aStationNames[i]  }));  
+                                    $('#mbta_stations').append($('<option>', { value: aStationNames[i].id,     
+                                                                               text : aStationNames[i].station  }));  
                                 }
                             }, // success handler
             error		: 	function (qXHR, textStatus, errorThrown ) {
