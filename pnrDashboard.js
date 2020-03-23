@@ -51,7 +51,7 @@ function toggle_basemap(e) {
             mgis_basemap_layers['layer1'].setVisible(true);
             mgis_basemap_layers['layer2'].setVisible(true);
             mgis_basemap_layers['layer3'].setVisible(true);
-            mgis_basemap_layers['layer4'].setVisible(false);
+            mgis_basemap_layers['layer4'].setVisible(true);
             break;
         default:
             break;
@@ -91,7 +91,8 @@ function details_for_station(e) {
                                 }
                                 props = aFeatures[0].getProperties();
                                 // We center the map on the feature.
-                                // Since it is a point feature, we arbitrarily choose a zoom level of 16. 
+                                // Since it is a point feature there is no "bounding box" to which to zoom,
+                                // so we arbitrarily choose a zoom level of 16. 
                                 point = aFeatures[0].getGeometry();
                                 coords = point.getCoordinates();                               
                                 view = ol_map.getView();                               
@@ -100,16 +101,18 @@ function details_for_station(e) {
                                 view.setZoom(16);
                                 // For the time being just dump some attribute info into the "output_div."
                                 // This is, obviously, not what we'll be doing in the finished product.
-                                // First, lear output_div before putting the newly fethed data into it.
+                                // First, clear output_div before putting the newly fethed data into it.
                                 $('#output_div').html(''); 
                                 var tmp;
-                                tmp = '<h3>Data for ' + props['station'] + 'Station</h3>';
+                                tmp = '<h4>Data for ' + props['station'] + 'Station</h4>';
                                 tmp += '<p>Line: ' + props['line'] + '<\p>';
                                 tmp += '<p>Route: ' + props['route'] + '<\p>';
                                 tmp += '<p>';
                                 tmp += props['terminus'] === 'T' ? 'This is a terminal station' : 'This is not a terminal station.';
                                 tmp += '<\p>'
                                 $('#output_div').html(tmp);   
+                                // And open the "Station and Lot Information" accordion panel (panel #1)
+                                $('#accordion').accordion("option", "active", 1)
                             }, // success handler
             error       :   function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get data for ' + text + 'failed.\n' +
@@ -122,11 +125,15 @@ function details_for_station(e) {
 
 
 // Function: initialize()
+//     0. Initialize the jQueryUI accordion control
 //     1. Initialize OpenLayers map, gets MassGIS basemap service properties by executing AJAX request
 //     2. Populate combo box of MBTA rapid transit stations, execute WFS request via AJAX to get relevant data
 //     3. Arm event handlers for UI controls
 //
 function initialize() {  
+    // 0. Initialize the jQueryUI accordion control
+    $('#accordion').accordion({ active: 0, collapsible : true, multiple : true });
+
     // 1. Initialize OpenLayers map, gets MassGIS basemap service properties by executing AJAX request
     $.ajax({ url: mgis_serviceUrls['topo_features'], jsonp: 'callback', dataType: 'jsonp', data: { f: 'json' }, 
              success: function(config) {     
@@ -165,6 +172,7 @@ function initialize() {
             tileGrid = new ol.tilegrid.TileGrid({ origin: tileOrigin, extent: extent, resolutions: resolutions });
         }     
 
+        // Layer 1 - topographic features
         var layerSource;
         layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
                                           tileSize: tileSize, tileGrid: tileGrid,
@@ -177,7 +185,7 @@ function initialize() {
         // We make the rash assumption that since this set of tiled basemap layers were designed to overlay one another,
         // their projection, extent, and resolutions are the same.
        
-        // Layer 2 - basemap features
+        // Layer 2 - "detailed" features
         urls = [mgis_serviceUrls['basemap_features'] += suffix];  
         layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
                                           tileSize: tileSize, tileGrid: tileGrid,
