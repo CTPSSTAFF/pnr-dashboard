@@ -8,4 +8,4 @@ This application depends upon the following external libraries:
 
 In addition, this application uses a plugin that extends the functionality
 of the jQueryUI 'accordion' control to support multiple accordion panels
-being open simulatneously: [jquery-ui-accordion.multiple] (https://github.com/asleepwalker/jquery-ui.accordion.multiple)
+being open simulatneously: [jquery-ui-accordion.multiple](https://github.com/asleepwalker/jquery-ui.accordion.multiple)
