@@ -11,14 +11,14 @@ var mgis_serviceUrls = {
 };
 
 // OpenLayers layers for MassGIS basemap layers used in our map
-var mgis_basemap_layers = { 'layer1' : null,
-                            'layer2' : null,
-                            'layer3' : null,
-                            'layer4' : null 
+var mgis_basemap_layers = { 'topo_features'     : null,     // bottom layer
+                            'structures'        : null,     
+                            'basemap_features'  : null,     // on top of 'structures' so labels aren't obscured
+                            'parcels'           : null      // unused; not populated
 };
 
 // OpenLayers layer for OpenStreetMap basesmap layer
-var osm_basemap_layer = new ol.layer.Tile({ source: new ol.source.OSM() });
+var osm_basemap_layer = null; 
 
 // Varioius things for WMS and WFS layers
 // First, folderol to allow the app to run on appsrvr3 as well as "in the wild"
@@ -39,19 +39,17 @@ var ol_map = null;
 // On-change event handler for radio buttons to chose basemap
 function toggle_basemap(e) {
     switch($(this).val()) {
-        case 'osm_basemap' :
-            mgis_basemap_layers['layer1'].setVisible(false);
-            mgis_basemap_layers['layer2'].setVisible(false);
-            mgis_basemap_layers['layer3'].setVisible(false);
-            mgis_basemap_layers['layer4'].setVisible(false);
-            osm_basemap_layer.setVisible(true);   
-            break;
         case 'massgis_basemap' :
             osm_basemap_layer.setVisible(false); 
-            mgis_basemap_layers['layer1'].setVisible(true);
-            mgis_basemap_layers['layer2'].setVisible(true);
-            mgis_basemap_layers['layer3'].setVisible(true);
-            mgis_basemap_layers['layer4'].setVisible(true);
+            mgis_basemap_layers['topo_features'].setVisible(true);
+            mgis_basemap_layers['structures'].setVisible(true);
+            mgis_basemap_layers['basemap_features'].setVisible(true);
+            break;        
+        case 'osm_basemap' :
+            mgis_basemap_layers['topo_features'].setVisible(false);
+            mgis_basemap_layers['structures'].setVisible(false);
+            mgis_basemap_layers['basemap_features'].setVisible(false);
+            osm_basemap_layer.setVisible(true);   
             break;
         default:
             break;
@@ -119,8 +117,7 @@ function details_for_station(e) {
 										'Status: ' + textStatus + '\n' +
 										'Error:  ' + errorThrown);
 							} // error handler 
-    });
-    
+    });   
 } // details_for_station()
 
 
@@ -178,47 +175,55 @@ function initialize() {
                                           tileSize: tileSize, tileGrid: tileGrid,
                                           tileUrlFunction: tileUrlFunction, urls: urls });
                           
-        mgis_basemap_layers['layer1'] = new ol.layer.Tile();
-        mgis_basemap_layers['layer1'].setSource(layerSource);
-        mgis_basemap_layers['layer1'].setVisible(false);
+        mgis_basemap_layers['topo_features'] = new ol.layer.Tile();
+        mgis_basemap_layers['topo_features'].setSource(layerSource);
+        mgis_basemap_layers['topo_features'].setVisible(true);
         
         // We make the rash assumption that since this set of tiled basemap layers were designed to overlay one another,
         // their projection, extent, and resolutions are the same.
-       
-        // Layer 2 - "detailed" features
-        urls = [mgis_serviceUrls['basemap_features'] += suffix];  
-        layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
-                                          tileSize: tileSize, tileGrid: tileGrid,
-                                          tileUrlFunction: tileUrlFunction, urls: urls });                                  
-        mgis_basemap_layers['layer2'] = new ol.layer.Tile();
-        mgis_basemap_layers['layer2'].setSource(layerSource);
-        mgis_basemap_layers['layer2'].setVisible(false);
         
-         // Layer 3 - structures
+         // Layer 2 - structures
         urls = [mgis_serviceUrls['structures'] += suffix];  
         layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
                                           tileSize: tileSize, tileGrid: tileGrid,
                                           tileUrlFunction: tileUrlFunction, urls: urls });;
-        mgis_basemap_layers['layer3'] = new ol.layer.Tile();
-        mgis_basemap_layers['layer3'].setSource(layerSource); 
-        mgis_basemap_layers['layer3'].setVisible(false);       
+        mgis_basemap_layers['structures'] = new ol.layer.Tile();
+        mgis_basemap_layers['structures'].setSource(layerSource); 
+        mgis_basemap_layers['structures'].setVisible(true);          
+        
+        
+        // Layer 3 - "detailed" features - these include labels
+        urls = [mgis_serviceUrls['basemap_features'] += suffix];  
+        layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
+                                          tileSize: tileSize, tileGrid: tileGrid,
+                                          tileUrlFunction: tileUrlFunction, urls: urls });                                  
+        mgis_basemap_layers['basemap_features'] = new ol.layer.Tile();
+        mgis_basemap_layers['basemap_features'].setSource(layerSource);
+        mgis_basemap_layers['basemap_features'].setVisible(true);
+              
                        
-        // Layer 4 - parcels
+        // Layer 4 - parcels - WE (CURRENTLY) DO NOT USE THIS LAYER
+        // Code retained for references purposes only
+/*
         urls = [mgis_serviceUrls['parcels'] += suffix];
         layerSource = new ol.source.XYZ({ attributions: [attribution], projection: projection,
                                           tileSize: tileSize, tileGrid: tileGrid,
                                           tileUrlFunction: tileUrlFunction, urls: urls });;
-        mgis_basemap_layers['layer4'] = new ol.layer.Tile();
-        mgis_basemap_layers['layer4'].setSource(layerSource);  
-        mgis_basemap_layers['layer4'].setVisible(false);
+        mgis_basemap_layers['parcels'] = new ol.layer.Tile();
+        mgis_basemap_layers['parcels'].setSource(layerSource);  
+        mgis_basemap_layers['parcels'].setVisible(true);
+*/
+
+        // Create OpenStreetMap base layer
+        osm_basemap_layer = new ol.layer.Tile({ source: new ol.source.OSM() });
+        osm_basemap_layer.setVisible(false);
 
         // Create OpenLayers map
         ol_map = new ol.Map({ layers: [  osm_basemap_layer,
-                                         mgis_basemap_layers['layer1'],
-                                         mgis_basemap_layers['layer2'],
-                                         mgis_basemap_layers['layer3'], 
-                                         mgis_basemap_layers['layer4']
-                                       ],
+                                         mgis_basemap_layers['topo_features'],
+                                         mgis_basemap_layers['structures'],
+                                         mgis_basemap_layers['basemap_features']
+                                      ],
                                target: 'map',
                                view:   new ol.View({ center: ol.proj.fromLonLat([-71.0589, 42.3601]), zoom: 11 })
                             });              
