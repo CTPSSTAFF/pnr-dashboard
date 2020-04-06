@@ -63,13 +63,13 @@ function details_for_station(e) {
     
     // Submit WFS request to get data for station, and pan/zoom map to it.
     // Note that these are *point* features.
-	var cqlFilter = "(station='" + text + "')";
+	var cqlFilter = "(st_num='" + value + "')";
 	var szUrl = szWFSserverRoot + '?';
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:mgis_mbta_node';
-		szUrl += '&srsname=EPSG:3857';              // NOTE: We reproject the native geometry of the feature to the SRS of the map.
+		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
+		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
         
@@ -102,12 +102,8 @@ function details_for_station(e) {
                                 // First, clear output_div before putting the newly fethed data into it.
                                 $('#output_div').html(''); 
                                 var tmp;
-                                tmp = '<h4>Data for ' + props['station'] + 'Station</h4>';
-                                tmp += '<p>Line: ' + props['line'] + '<\p>';
-                                tmp += '<p>Route: ' + props['route'] + '<\p>';
-                                tmp += '<p>';
-                                tmp += props['terminus'] === 'T' ? 'This is a terminal station' : 'This is not a terminal station.';
-                                tmp += '<\p>'
+                                tmp = '<h4>Data for ' + props['stan_addr'] + 'Station</h4>';
+                                tmp += '<p>Line: ' + props['lines'] + '<\p>';
                                 $('#output_div').html(tmp);   
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
                                 $('#accordion').accordion("option", "active", 1)
@@ -229,13 +225,14 @@ function initialize() {
                             });              
     }});
     
-    // 2. Populate combo box of MBTA rapid transit stations, submit WFS request via AJAX to get relevant data
+    // 2. Populate combo box of MBTA stations (rapid transit, commuter rail, and a few others),
+    //    submit WFS request via AJAX to get relevant data
 	var szUrl = szWFSserverRoot + '?';
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:mgis_mbta_node';
-        szUrl += '&propertyname=station';  // The only attribute we need to populate the combo box is the station name
+		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
+        szUrl += '&propertyname=st_num,stan_addr';  // The only attribute we need to populate the combo box is the station name
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
@@ -252,10 +249,9 @@ function initialize() {
                                 // Get an alphabetically sorted array of station names
                                 for (i = 0; i < aFeatures.length; i++) {
                                     tmp = { 'id' : 0, 'station' : '' };
-                                    // The following statement is a temp hack to get a feature_id...
-                                    feature_id = +aFeatures[i].id_.replace('mgis_mbta_node.','');
                                     props = aFeatures[i].getProperties();
-                                    stn_name = props['station'];
+                                    feature_id = props['st_num'];
+                                    stn_name = props['stan_addr'];
                                     tmp.id = feature_id;
                                     tmp.station = stn_name;
                                     aStationNames.push(tmp);
