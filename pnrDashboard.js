@@ -102,8 +102,24 @@ function details_for_station(e) {
                                 // First, clear output_div before putting the newly fethed data into it.
                                 $('#output_div').html(''); 
                                 var tmp;
-                                tmp = '<h4>Data for ' + props['stan_addr'] + 'Station</h4>';
+                                tmp = '<h4>Data for ' + props['stan_addr'] + ' Station</h4>';
                                 tmp += '<p>Line: ' + props['lines'] + '<\p>';
+								tmp += '<p>ST NUM: ' + props['st_num'] + '<\p>';
+								tmp += '<p>ST CODE: ' + props['st_code'] + '<\p>';
+								tmp += '<p>Station Mode: ' + props[''] + '<\p>'; // this is split into several columns
+								tmp += '<p>Number of Spaces: ' + props['numberspaces'] + '<\p>';
+								tmp += '<p>Number of Bikes Present: ' + props['numberbikes'] + '<\p>';
+								tmp += '<p>Bicycle Rack Types Present: ' + props['rack_type'] + '<\p>';
+								tmp += '<p>How Many Other Locations?: ' + props['otherlocations_howmany'] + '<\p>';
+								tmp += '<p>Bike Trail Nearby?: ' + props['biketrail_yn'] + '<\p>';
+								tmp += '<p>Bike Lanes Leading to Station?: ' + props['bikelanes_yn'] + '<\p>';
+								tmp += '<p>Sidewalks Leading to Station?: ' + props['sidewalks_yn'] + '<\p>';
+								tmp += '<p>Sidewalk Condition: ' + props['sidewalks_cond'] + '<\p>';
+								tmp += '<p>Crosswalks Leading to Station?: ' + props['crosswalks_yn'] + '<\p>';
+								tmp += '<p>Crosswalk Condition: ' + props['crosswalks_cond'] + '<\p>';
+								tmp += '<p>Signal Near Station?: ' + props['sigints_yn'] + '<\p>';
+								tmp += '<p>Pedestrian Signal Near Station?: ' + props['sigints_pedind_yn'] + '<\p>';
+								
                                 $('#output_div').html(tmp);   
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
                                 $('#accordion').accordion("option", "active", 1)
