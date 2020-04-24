@@ -56,6 +56,15 @@ function toggle_basemap(e) {
     }   
 } // toggle_basemap()
 
+//various functions to be used in the ajax calls
+
+//fix -1/0/null 
+
+//concatenate mode columns
+
+//if only lot info, don't put out N/A put out a string
+
+
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
     var value = +$("#mbta_stations").val();
@@ -72,7 +81,18 @@ function details_for_station(e) {
 		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
-        
+	
+	//These are polygon features - lots associated with the station.
+	var lotUrl = szWFSserverRoot + '?';
+		lotUrl += '&service=wfs';
+		lotUrl += '&version=1.0.0';
+		lotUrl += '&request=getfeature';
+		lotUrl += '&typename=ctps_pg:ctps_pnr_lots_polygons';
+		lotUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
+		lotUrl += '&outputformat=json';
+		lotUrl += '&cql_filter=' + cqlFilter;
+    
+	//ajax request for points
 	$.ajax({ url		: szUrl,
 			 type		: 'GET',
 			 dataType	: 'json',
@@ -119,8 +139,69 @@ function details_for_station(e) {
 								tmp += '<p>Crosswalk Condition: ' + props['crosswalks_cond'] + '<\p>';
 								tmp += '<p>Signal Near Station?: ' + props['sigints_yn'] + '<\p>';
 								tmp += '<p>Pedestrian Signal Near Station?: ' + props['sigints_pedind_yn'] + '<\p>';
+								//replace values of -1 with Yes and make undefined/null nicer
+								tmp_r = tmp.replace(/ -1/g, " Yes")
+								tmp_rr = tmp_r.replace(/undefined|null/g, " No Data Collected")
 								
-                                $('#output_div').html(tmp);   
+                                $('#output_div').html(tmp_rr);   
+                                // And open the "Station and Lot Information" accordion panel (panel #1)
+                                $('#accordion').accordion("option", "active", 1)
+                            }, // success handler
+            error       :   function (qXHR, textStatus, errorThrown ) {
+								alert('WFS request to get data for ' + text + 'failed.\n' +
+										'Status: ' + textStatus + '\n' +
+										'Error:  ' + errorThrown);
+							} // error handler 
+    });   
+	//ajax request for lots
+	$.ajax({ url		: lotUrl,
+			 type		: 'GET',
+			 dataType	: 'json',
+			 success	: 	function (data, textStatus, jqXHR) {	
+                                var reader, aFeatures = [], props = {}, point, coords, view, size;
+								reader = new ol.format.GeoJSON();
+								aFeatures = reader.readFeatures(jqXHR.responseText);
+								if (aFeatures.length === 0) {
+									alert('WFS request to get data for station ' + text + ' returned no features.');
+									$('#output_div_lots').html('');
+									return;
+								} else if (aFeatures.length > 1) {
+                                    alert('WFS request to get data for station lots ' + text + ' returned ' + aFeatures.length + ' features.');
+                                    //return;
+                                }
+								
+								// For the time being just dump some attribute info into the "output_div."
+								// This is, obviously, not what we'll be doing in the finished product.
+								// First, clear output_div before putting the newly fetched data into it.
+								$('#output_div_lots').html(''); 
+								
+								var tmp_1 = '';//putting outside the loop to be filled multiplicitously
+								for (i=0; i < aFeatures.length; i++){
+									props = aFeatures[i].getProperties();
+			
+									tmp_1 += '<h4>Data for ' + props['station_name'] + ' Lot</h4>';
+									//tmp_1 += '<p>Station Name: ' + props['station_name'] + '<\p>';
+									tmp_1 += '<p>Lot ID: ' + props['lot_id'] + '<\p>';
+									tmp_1 += '<p>Line ID: ' + props['line_id'] + '<\p>';
+									tmp_1 += '<p>Mode: ' + props['mode'] + '<\p>'; // this is split into several columns
+									tmp_1 += '<p>Parking Space Non-HP: ' + props['parking_space_non_hp_1'] + '<\p>';
+									tmp_1 += '<p>Used Spaces Non-HP: ' + props['used_spaces_non_hp_1'] + '<\p>';
+									tmp_1 += '<p>HP Parking Spaces: ' + props['hp_parking_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Used HP Parking Spaces: ' + props['used_hp_parking_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Total Spaces: ' + props['total_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Total Used Spaces: ' + props['total_used_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Total Utilization - All Parking: ' + props['total_utilization_all_parking_1'] + '<\p>';
+									tmp_1 += '<p>Public Parking No HP Spaces: ' + props['publicparkingnohp_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Public Parking No HP Vehicles: ' + props['publicparkingnohp_vehicles_1'] + '<\p>';
+									tmp_1 += '<p>Public Parking No HP Utilization: ' + props['publicparkingnohp_utilization_1'] + '<\p>';
+									tmp_1 += '<p>Cars Not in Marked Spaces: ' + props['cars_not_in_marked_spaces_1'] + '<\p>';
+									tmp_1 += '<p>Lot Ownership: ' + props['lot_ownership_1'] + '<\p>';
+									tmp_1 += '<p>Parking Fee: $' + props['parking_fee_1'] + '<\p>';
+									
+								}//end of for loop looping through json response
+								
+								
+                                $('#output_div_lots').html(tmp_1);   
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
                                 $('#accordion').accordion("option", "active", 1)
                             }, // success handler
