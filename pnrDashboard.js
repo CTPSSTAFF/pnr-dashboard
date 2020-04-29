@@ -57,12 +57,121 @@ function toggle_basemap(e) {
 } // toggle_basemap()
 
 //various functions to be used in the ajax calls
-
 //fix -1/0/null 
+function neg_zero_null(val) {
+	var ret = null;
+	if (val = "-1") {
+		ret = "Yes";
+	} else if (val = "0") {
+		ret = "No";
+	} else {
+		ret = "No Data";
+	}
+	return ret;
+}//end neg_zero_null
 
 //concatenate mode columns
+function mode_concat(f1, f2, f3, f4) {
+	var mode = '';
+	var modes_arr = [f1, f2, f3, f4];
+	var filt_modes_arr = modes_arr.filter(function (el) {
+		return el != null;
+	});
+	
+	for (i = 0; i < filt_modes_arr.length; i++) {
+		//console.log(modes_arr)
+		//console.log(filt_modes_arr.length)
+		console.log(filt_modes_arr[i])
+		if (filt_modes_arr[i] != null) {
+			if (filt_modes_arr[i] == "RT") {
+				if (filt_modes_arr.length > 1){
+					mode += "Rapid Transit, ";
+				} else {
+					mode += "Rapid Transit";
+				}
+			} else if (filt_modes_arr[i] == "CR") {
+				console.log("CR")
+				mode += "Commuter Rail";
+			} else if (filt_modes_arr[i] == "BRT") {
+				console.log("BRT")
+				if (filt_modes_arr[i-1] == "CR"){
+					mode += ", Bus Rapid Transit";
+				} else {
+					mode += "Bus Rapid Transit ";
+				}
+			} else if (filt_modes_arr[i] == "F") {
+				console.log("F")
+				mode += "Ferry";
+			} else if (filt_modes_arr[i] == "BUS") {
+				console.log("Bus")
+				mode += "Bus";
+			}
+			//mode += modes_arr[i];
+			//mode += " ";
+		}
+		console.log(mode)
+	}
+	return mode;
+}//end mode_concat
+
 
 //if only lot info, don't put out N/A put out a string
+function no_data_str(data) {
+}
+
+// 'success' handler for WFS request for LOTS data
+function success_handler_for_lots_data(data, textStatus, jqXHR) {	
+	var text = $("#mbta_stations option:selected").text();
+    var reader, aFeatures = [], props = {}, point, coords, view, size;
+    reader = new ol.format.GeoJSON();
+    aFeatures = reader.readFeatures(jqXHR.responseText);
+    if (aFeatures.length === 0) {
+        alert('WFS request to get data for lots at station ' + text + ' returned no features.');
+        $('#output_div_lots').html('');
+        return;
+    } else if (aFeatures.length > 1) {
+        alert('WFS request to get data for station lots ' + text + ' returned ' + aFeatures.length + ' features.');
+        //return;
+    }
+    
+    // Clear out any previous data that might be left in the "output_div_lots" div
+    $('#output_div_lots').html(''); 
+    
+    var i;
+    var tmp_1 = '';//putting outside the loop to be filled multiplicitously
+    for (i=0; i < aFeatures.length; i++){
+        props = aFeatures[i].getProperties();
+
+        tmp_1 += '<h4>Data for ' + props['station_name'] + ' Lot</h4>';
+        //tmp_1 += '<p>Station Name: ' + props['station_name'] + '<\p>';
+        tmp_1 += '<p>Lot ID: ' + props['lot_id'] + '<\p>';
+        tmp_1 += '<p>Line ID: ' + props['line_id'] + '<\p>';
+        tmp_1 += '<p>Mode: ' + props['mode'] + '<\p>'; // this is split into several columns
+        tmp_1 += '<p>Parking Space Non-HP: ' + props['parking_space_non_hp_1'] + '<\p>';
+        tmp_1 += '<p>Used Spaces Non-HP: ' + props['used_spaces_non_hp_1'] + '<\p>';
+        tmp_1 += '<p>HP Parking Spaces: ' + props['hp_parking_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Used HP Parking Spaces: ' + props['used_hp_parking_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Total Spaces: ' + props['total_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Total Used Spaces: ' + props['total_used_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Total Utilization - All Parking: ' + props['total_utilization_all_parking_1'] + '<\p>';
+        tmp_1 += '<p>Public Parking No HP Spaces: ' + props['publicparkingnohp_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Public Parking No HP Vehicles: ' + props['publicparkingnohp_vehicles_1'] + '<\p>';
+        tmp_1 += '<p>Public Parking No HP Utilization: ' + props['publicparkingnohp_utilization_1'] + '<\p>';
+        tmp_1 += '<p>Cars Not in Marked Spaces: ' + props['cars_not_in_marked_spaces_1'] + '<\p>';
+        tmp_1 += '<p>Lot Ownership: ' + props['lot_ownership_1'] + '<\p>';
+        tmp_1 += '<p>Parking Fee: $' + props['parking_fee_1'] + '<\p>';
+        
+    } //end of for loop looping through json response
+    
+    // For the time being just dump some attribute info into the "output_div."
+    // This is, obviously, not what we'll be doing in the finished product.
+    // First, clear output_div before putting the newly fetched data into it.
+    $('#output_div_lots').html(tmp_1);  
+    
+    // Note that the LOTS data is put into accordion panel #2
+    // Here, we open accordion panel #2 ... but we need to think if this is really what we want to do...
+    $('#accordion').accordion("option", "active", 2)
+} // success_handler_for_lots_data()
 
 
 // On-change event handler for combo box of MBTA stations
@@ -82,17 +191,7 @@ function details_for_station(e) {
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
 	
-	//These are polygon features - lots associated with the station.
-	var lotUrl = szWFSserverRoot + '?';
-		lotUrl += '&service=wfs';
-		lotUrl += '&version=1.0.0';
-		lotUrl += '&request=getfeature';
-		lotUrl += '&typename=ctps_pg:ctps_pnr_lots_polygons';
-		lotUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
-		lotUrl += '&outputformat=json';
-		lotUrl += '&cql_filter=' + cqlFilter;
-    
-	//ajax request for points
+	//ajax request for STATION points
 	$.ajax({ url		: szUrl,
 			 type		: 'GET',
 			 dataType	: 'json',
@@ -126,91 +225,61 @@ function details_for_station(e) {
                                 tmp += '<p>Line: ' + props['lines'] + '<\p>';
 								tmp += '<p>ST NUM: ' + props['st_num'] + '<\p>';
 								tmp += '<p>ST CODE: ' + props['st_code'] + '<\p>';
-								tmp += '<p>Station Mode: ' + props[''] + '<\p>'; // this is split into several columns
+								tmp += '<p>Station Mode: ' + mode_concat(props['mode_rt'],props['mode_cr'],props['mode_brt'],props['mode_other']) + '<\p>'; // this is split into several columns
+								//if (props['numberspaces'] == null) {}
 								tmp += '<p>Number of Spaces: ' + props['numberspaces'] + '<\p>';
 								tmp += '<p>Number of Bikes Present: ' + props['numberbikes'] + '<\p>';
 								tmp += '<p>Bicycle Rack Types Present: ' + props['rack_type'] + '<\p>';
 								tmp += '<p>How Many Other Locations?: ' + props['otherlocations_howmany'] + '<\p>';
-								tmp += '<p>Bike Trail Nearby?: ' + props['biketrail_yn'] + '<\p>';
-								tmp += '<p>Bike Lanes Leading to Station?: ' + props['bikelanes_yn'] + '<\p>';
-								tmp += '<p>Sidewalks Leading to Station?: ' + props['sidewalks_yn'] + '<\p>';
+								tmp += '<p>Bike Trail Nearby?: ' + neg_zero_null(props['biketrail_yn']) + '<\p>';
+								tmp += '<p>Bike Lanes Leading to Station?: ' + neg_zero_null(props['bikelanes_yn']) + '<\p>';
+								tmp += '<p>Sidewalks Leading to Station?: ' + neg_zero_null(props['sidewalks_yn']) + '<\p>';
 								tmp += '<p>Sidewalk Condition: ' + props['sidewalks_cond'] + '<\p>';
-								tmp += '<p>Crosswalks Leading to Station?: ' + props['crosswalks_yn'] + '<\p>';
+								tmp += '<p>Crosswalks Leading to Station?: ' + neg_zero_null(props['crosswalks_yn']) + '<\p>';
 								tmp += '<p>Crosswalk Condition: ' + props['crosswalks_cond'] + '<\p>';
-								tmp += '<p>Signal Near Station?: ' + props['sigints_yn'] + '<\p>';
-								tmp += '<p>Pedestrian Signal Near Station?: ' + props['sigints_pedind_yn'] + '<\p>';
+								tmp += '<p>Signal Near Station?: ' + neg_zero_null(props['sigints_yn']) + '<\p>';
+								tmp += '<p>Pedestrian Signal Near Station?: ' + neg_zero_null(props['sigints_pedind_yn']) + '<\p>';
 								//replace values of -1 with Yes and make undefined/null nicer
-								tmp_r = tmp.replace(/ -1/g, " Yes")
-								tmp_rr = tmp_r.replace(/undefined|null/g, " No Data Collected")
+								//tmp_r = tmp.replace(/ -1/g, " Yes")
+								//tmp_rr = tmp_r.replace(/undefined|null/g, " No Data Collected")
 								
-                                $('#output_div').html(tmp_rr);   
+                                $('#output_div').html(tmp);   
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
                                 $('#accordion').accordion("option", "active", 1)
-                            }, // success handler
+                                
+                                // Having retrieved and rendered the data for the STATION,
+                                // we now retrieve and render the data for any LOTS associated with it.
+                                var lotUrl = szWFSserverRoot + '?';
+                                lotUrl += '&service=wfs';
+                                lotUrl += '&version=1.0.0';
+                                lotUrl += '&request=getfeature';
+                                lotUrl += '&typename=ctps_pg:ctps_pnr_lots_polygons';
+                                lotUrl += '&srsname=EPSG:3857';  // Reproject native SRS of data to SRS of map
+                                lotUrl += '&outputformat=json';
+                                lotUrl += '&cql_filter=' + cqlFilter;
+                               
+                                // ajax request for LOTS data
+                                $.ajax({ url		: lotUrl,
+                                         type		: 'GET',
+                                         dataType	: 'json',
+                                                      // 'success' handler for WFS request for LOTS data
+                                                      // is defined out-of-line, above
+                                         success	: success_handler_for_lots_data,
+                                                      // 'error' handler for WFS request for LOTS data
+                                                      // is defined here, in-line right here
+                                         error      : function (qXHR, textStatus, errorThrown ) {
+                                                        alert('WFS request to get LOTS data for ' + text + 'failed.\n' +
+                                                              'Status: ' + textStatus + '\n' +
+                                                              'Error:  ' + errorThrown);
+                                                      }
+                                }); // End of 'inner' WFS request - for LOTS data
+                            }, // end of 'success' handler for 'outer' WFS request - for STATION data 
             error       :   function (qXHR, textStatus, errorThrown ) {
-								alert('WFS request to get data for ' + text + 'failed.\n' +
+								alert('WFS request to get STATION data for ' + text + 'failed.\n' +
 										'Status: ' + textStatus + '\n' +
 										'Error:  ' + errorThrown);
-							} // error handler 
-    });   
-	//ajax request for lots
-	$.ajax({ url		: lotUrl,
-			 type		: 'GET',
-			 dataType	: 'json',
-			 success	: 	function (data, textStatus, jqXHR) {	
-                                var reader, aFeatures = [], props = {}, point, coords, view, size;
-								reader = new ol.format.GeoJSON();
-								aFeatures = reader.readFeatures(jqXHR.responseText);
-								if (aFeatures.length === 0) {
-									alert('WFS request to get data for station ' + text + ' returned no features.');
-									$('#output_div_lots').html('');
-									return;
-								} else if (aFeatures.length > 1) {
-                                    alert('WFS request to get data for station lots ' + text + ' returned ' + aFeatures.length + ' features.');
-                                    //return;
-                                }
-								
-								// For the time being just dump some attribute info into the "output_div."
-								// This is, obviously, not what we'll be doing in the finished product.
-								// First, clear output_div before putting the newly fetched data into it.
-								$('#output_div_lots').html(''); 
-								
-								var tmp_1 = '';//putting outside the loop to be filled multiplicitously
-								for (i=0; i < aFeatures.length; i++){
-									props = aFeatures[i].getProperties();
-			
-									tmp_1 += '<h4>Data for ' + props['station_name'] + ' Lot</h4>';
-									//tmp_1 += '<p>Station Name: ' + props['station_name'] + '<\p>';
-									tmp_1 += '<p>Lot ID: ' + props['lot_id'] + '<\p>';
-									tmp_1 += '<p>Line ID: ' + props['line_id'] + '<\p>';
-									tmp_1 += '<p>Mode: ' + props['mode'] + '<\p>'; // this is split into several columns
-									tmp_1 += '<p>Parking Space Non-HP: ' + props['parking_space_non_hp_1'] + '<\p>';
-									tmp_1 += '<p>Used Spaces Non-HP: ' + props['used_spaces_non_hp_1'] + '<\p>';
-									tmp_1 += '<p>HP Parking Spaces: ' + props['hp_parking_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Used HP Parking Spaces: ' + props['used_hp_parking_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Total Spaces: ' + props['total_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Total Used Spaces: ' + props['total_used_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Total Utilization - All Parking: ' + props['total_utilization_all_parking_1'] + '<\p>';
-									tmp_1 += '<p>Public Parking No HP Spaces: ' + props['publicparkingnohp_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Public Parking No HP Vehicles: ' + props['publicparkingnohp_vehicles_1'] + '<\p>';
-									tmp_1 += '<p>Public Parking No HP Utilization: ' + props['publicparkingnohp_utilization_1'] + '<\p>';
-									tmp_1 += '<p>Cars Not in Marked Spaces: ' + props['cars_not_in_marked_spaces_1'] + '<\p>';
-									tmp_1 += '<p>Lot Ownership: ' + props['lot_ownership_1'] + '<\p>';
-									tmp_1 += '<p>Parking Fee: $' + props['parking_fee_1'] + '<\p>';
-									
-								}//end of for loop looping through json response
-								
-								
-                                $('#output_div_lots').html(tmp_1);   
-                                // And open the "Station and Lot Information" accordion panel (panel #1)
-                                $('#accordion').accordion("option", "active", 1)
-                            }, // success handler
-            error       :   function (qXHR, textStatus, errorThrown ) {
-								alert('WFS request to get data for ' + text + 'failed.\n' +
-										'Status: ' + textStatus + '\n' +
-										'Error:  ' + errorThrown);
-							} // error handler 
-    });   
+							} // error handler for WFS request for STATION data
+    });  // End of 'outer' WFS request - for STATION data
 } // details_for_station()
 
 
