@@ -115,8 +115,15 @@ function mode_concat(f1, f2, f3, f4) {
 }//end mode_concat
 
 
-//if only lot info, don't put out N/A put out a string
+//if null for a station field - used if not all fields are null
 function no_data_str(data) {
+	var out_str;
+	if (data == null || data == '') {
+		out_str = 'No Data Collected';
+	} else {
+		out_str = data
+	}
+	return out_str
 }
 
 // 'success' handler for WFS request for LOTS data
@@ -226,22 +233,24 @@ function details_for_station(e) {
 								tmp += '<p>ST NUM: ' + props['st_num'] + '<\p>';
 								tmp += '<p>ST CODE: ' + props['st_code'] + '<\p>';
 								tmp += '<p>Station Mode: ' + mode_concat(props['mode_rt'],props['mode_cr'],props['mode_brt'],props['mode_other']) + '<\p>'; // this is split into several columns
-								//if (props['numberspaces'] == null) {}
-								tmp += '<p>Number of Spaces: ' + props['numberspaces'] + '<\p>';
-								tmp += '<p>Number of Bikes Present: ' + props['numberbikes'] + '<\p>';
-								tmp += '<p>Bicycle Rack Types Present: ' + props['rack_type'] + '<\p>';
-								tmp += '<p>How Many Other Locations?: ' + props['otherlocations_howmany'] + '<\p>';
-								tmp += '<p>Bike Trail Nearby?: ' + neg_zero_null(props['biketrail_yn']) + '<\p>';
-								tmp += '<p>Bike Lanes Leading to Station?: ' + neg_zero_null(props['bikelanes_yn']) + '<\p>';
-								tmp += '<p>Sidewalks Leading to Station?: ' + neg_zero_null(props['sidewalks_yn']) + '<\p>';
-								tmp += '<p>Sidewalk Condition: ' + props['sidewalks_cond'] + '<\p>';
-								tmp += '<p>Crosswalks Leading to Station?: ' + neg_zero_null(props['crosswalks_yn']) + '<\p>';
-								tmp += '<p>Crosswalk Condition: ' + props['crosswalks_cond'] + '<\p>';
-								tmp += '<p>Signal Near Station?: ' + neg_zero_null(props['sigints_yn']) + '<\p>';
-								tmp += '<p>Pedestrian Signal Near Station?: ' + neg_zero_null(props['sigints_pedind_yn']) + '<\p>';
-								//replace values of -1 with Yes and make undefined/null nicer
-								//tmp_r = tmp.replace(/ -1/g, " Yes")
-								//tmp_rr = tmp_r.replace(/undefined|null/g, " No Data Collected")
+								if (props['healthy'] != 0) {
+									tmp += '<p>Number of Spaces: ' + no_data_str(props['numberspaces']) + '<\p>';
+									tmp += '<p>Number of Bikes Present: ' + no_data_str(props['numberbikes']) + '<\p>';
+									tmp += '<p>Bicycle Rack Types Present: ' + no_data_str(props['rack_type']) + '<\p>';
+									tmp += '<p>How Many Other Locations?: ' + no_data_str(props['otherlocations_howmany']) + '<\p>';
+									tmp += '<p>Bike Trail Nearby?: ' + neg_zero_null(props['biketrail_yn']) + '<\p>';
+									tmp += '<p>Bike Lanes Leading to Station?: ' + neg_zero_null(props['bikelanes_yn']) + '<\p>';
+									tmp += '<p>Sidewalks Leading to Station?: ' + neg_zero_null(props['sidewalks_yn']) + '<\p>';
+									tmp += '<p>Sidewalk Condition: ' + props['sidewalks_cond'] + '<\p>';
+									tmp += '<p>Crosswalks Leading to Station?: ' + neg_zero_null(props['crosswalks_yn']) + '<\p>';
+									tmp += '<p>Crosswalk Condition: ' + no_data_str(props['crosswalks_cond']) + '<\p>';
+									tmp += '<p>Signal Near Station?: ' + neg_zero_null(props['sigints_yn']) + '<\p>';
+									tmp += '<p>Pedestrian Signal Near Station?: ' + neg_zero_null(props['sigints_pedind_yn']) + '<\p>';
+								} else {
+									tmp += '<p>No Bicycle Parking Data Collected at This Station <\p>'
+								}
+								
+								
 								
                                 $('#output_div').html(tmp);   
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
