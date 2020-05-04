@@ -65,7 +65,7 @@ function neg_zero_null(val) {
 	} else if (val = "0") {
 		ret = "No";
 	} else {
-		ret = "No Data";
+		ret = "No Data Collected";
 	}
 	return ret;
 }//end neg_zero_null
@@ -226,33 +226,39 @@ function details_for_station(e) {
                                 // For the time being just dump some attribute info into the "output_div."
                                 // This is, obviously, not what we'll be doing in the finished product.
                                 // First, clear output_div before putting the newly fethed data into it.
-                                $('#output_div').html(''); 
-                                var tmp;
-                                tmp = '<h4>Data for ' + props['stan_addr'] + ' Station</h4>';
-                                tmp += '<p>Line: ' + props['lines'] + '<\p>';
-								tmp += '<p>ST NUM: ' + props['st_num'] + '<\p>';
-								tmp += '<p>ST CODE: ' + props['st_code'] + '<\p>';
-								tmp += '<p>Station Mode: ' + mode_concat(props['mode_rt'],props['mode_cr'],props['mode_brt'],props['mode_other']) + '<\p>'; // this is split into several columns
+                                
+                                // This is too large a sledgehammer for now! -- BK 5/1/2020
+                                // $('#output_div').html(''); 
+                                // So, use this:
+                                $('.station_data').html('');
+                                
+                                
+                              
+								$('#station_name').html(props['stan_addr']);
+								$('#lines').html(props['lines']);
+								$('#st_num').html(props['st_num']);
+								$('#st_code').html(props['st_code']);
+								$('#mode').html(mode_concat(props['mode_rt'],props['mode_cr'],props['mode_brt'],props['mode_other']));
+                              
 								if (props['healthy'] != 0) {
-									tmp += '<p>Number of Spaces: ' + no_data_str(props['numberspaces']) + '<\p>';
-									tmp += '<p>Number of Bikes Present: ' + no_data_str(props['numberbikes']) + '<\p>';
-									tmp += '<p>Bicycle Rack Types Present: ' + no_data_str(props['rack_type']) + '<\p>';
-									tmp += '<p>How Many Other Locations?: ' + no_data_str(props['otherlocations_howmany']) + '<\p>';
-									tmp += '<p>Bike Trail Nearby?: ' + neg_zero_null(props['biketrail_yn']) + '<\p>';
-									tmp += '<p>Bike Lanes Leading to Station?: ' + neg_zero_null(props['bikelanes_yn']) + '<\p>';
-									tmp += '<p>Sidewalks Leading to Station?: ' + neg_zero_null(props['sidewalks_yn']) + '<\p>';
-									tmp += '<p>Sidewalk Condition: ' + props['sidewalks_cond'] + '<\p>';
-									tmp += '<p>Crosswalks Leading to Station?: ' + neg_zero_null(props['crosswalks_yn']) + '<\p>';
-									tmp += '<p>Crosswalk Condition: ' + no_data_str(props['crosswalks_cond']) + '<\p>';
-									tmp += '<p>Signal Near Station?: ' + neg_zero_null(props['sigints_yn']) + '<\p>';
-									tmp += '<p>Pedestrian Signal Near Station?: ' + neg_zero_null(props['sigints_pedind_yn']) + '<\p>';
+                                    $('#number_of_bike_spaces').html(no_data_str(props['numberspaces']));
+									$('#number_of_bikes').html(no_data_str(props['numberbikes']));
+									$('#bike_racks').html(no_data_str(props['rack_type']));
+									$('#other_locations').html(no_data_str(props['otherlocations_howmany']));
+									$('#bike_trail').html(neg_zero_null(props['biketrail_yn']));
+									$('#bike_lanes').html(neg_zero_null(props['bikelanes_yn']));
+									$('#sidewalks').html(neg_zero_null(props['sidewalks_yn']));
+									$('#sidewalk_cond').html(props['sidewalks_cond']);
+									$('#crosswalks').html(neg_zero_null(props['crosswalks_yn']));
+									$('#crosswalk_cond').html(no_data_str(props['crosswalks_cond']));
+									$('#signal').html(neg_zero_null(props['sigints_yn']));
+									$('#ped_signal').html(neg_zero_null(props['sigints_pedind_yn']));
+									//$('#').html();
+									
 								} else {
 									tmp += '<p>No Bicycle Parking Data Collected at This Station <\p>'
 								}
-								
-								
-								
-                                $('#output_div').html(tmp);   
+				
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
                                 $('#accordion').accordion("option", "active", 1)
                                 
@@ -290,6 +296,12 @@ function details_for_station(e) {
 							} // error handler for WFS request for STATION data
     });  // End of 'outer' WFS request - for STATION data
 } // details_for_station()
+
+
+
+
+
+
 
 
 // Function: initialize()
@@ -453,4 +465,42 @@ function initialize() {
     $(".basemap_radio").change(toggle_basemap);
     // Arm on-change event handler for combo box of MBTA stations
     $("#mbta_stations").change(details_for_station);
+    
+    //ACCESSIBLE GRID TESTING
+    //$(document).ready(function() {           
+    // As you can tell, the interface for the accessible grid plug-in could use a bit more TLC.
+    // At the very least, there is no need for a 'colDesc' parameter in addition to the 'options' parameter.
+    //
+    var myColDesc = [ { dataIndex: "name",      header: "Station Name", style: "width:500px" },
+                      { dataIndex: "occupancy", header: "Very-very-very-long-winded-column-header" },
+                      { dataIndex: "capacity",  header: "Wowie, zowie", style: "color:red",
+                        renderer: function(val, rec, rowIx, colIx, store) { return val.toLocaleString(); } }
+                    ];
+    //dataIndex will equal props["whatever"]
+                      
+    var myOptions = { divId:   "output_div_lots",
+                      tableId: "table_1",
+                      caption: "This is the caption for my table.",
+                      summary: "This table is really cool.",
+                      colDesc: myColDesc
+                    };
+                    
+    var data = [ { name: "Alewife",  capacity: 750,   occupancy: 650 },
+                 { name: "Quincy",   capacity: 1000,  occupancy: 950 },
+                 { name: "Folderol", capacity: 200,   occupancy: 199 },
+                 { name: "Foobar",   capacity: 10000, occupancy: 42 }
+                ];
+
+    // NOTE:
+    //  |   We need some kind of JQ selector here, but what you use is arbitrary.
+    //  |   By convention, I've used the ID of the div into which the table is to be written.
+    //  |
+    // \ /            
+    //  .
+    $('#output_div_lots').accessibleGrid(myColDesc, myOptions, data);
+
+    console.log("Generation of accessible table has completed.");
+
+    // End test of generating accessible grid
+    
 } // initialize()

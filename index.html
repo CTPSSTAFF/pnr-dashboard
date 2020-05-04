@@ -9,6 +9,7 @@
         
         <script src="libs/jquery-3.4.1.js"></script>          
         <script src="libs/jquery-ui-1.10.4/js/jquery-ui-1.10.4.custom.min.js"></script>
+		<script src="libs/jquery.accessibleGrid-0.09.js."></script>
         <!-- JQUI plugin that allows multiple panels of 'accordion' controls to be open simultaneously. -->
         <script src="libs/jquery-ui.accordion.multiple-master/lib/jquery-ui.accordion.multiple.js"></script>       
         <script src="libs/openlayers-6.1.0-ol.js"></script>        
@@ -60,11 +61,33 @@
             <h3>Map</h3>
             <div id="map" class="map"></div>
             <!-- Accordion panel #1: -->
-            <h3>Station and Lot Information</h3>
+            <h3>Station Information</h3>
             <!-- The following is temp, only for use during early development. -->
-            <div id="output_div"></div>
+            <div id="output_div">
+				<h4>Data For <span id = "station_name" class = "station_data"></span></h4>
+				<div>Line: <span id = "lines" class = "station_data"></span></div>
+				<div>ST NUM: <span id = "st_num" class = "station_data"></span></div>
+				<div>ST CODE: <span id = "st_code" class = "station_data"></span></div>
+				<div>Station Mode: <span id = "mode" class = "station_data"></span></div>
+                <div>Number of Bike Spaces: <span id="number_of_bike_spaces" class="station_data"></span></div>
+                <div>Number of Bikes Present: <span id="number_of_bikes" class="station_data"></span></div>
+				<div>Bicycle Rack Types Present: <span id="bike_racks" class="station_data"></span></div>
+				<div>How Many Other Locations? <span id = "other_locations" class = "station_data"></span></div>
+				<div>Bike Trail Nearby? <span id = "bike_trail" class = "station_data"></span></div>
+				<div>Bike Lanes Leading to Station? <span id = "bike_lanes" class = "station_data"></span></div>
+				<div>Sidewalks Leading to Station? <span id = "sidewalks" class = "station_data"></span></div>
+				<div>Sidewalk Condition: <span id = "sidewalk_cond" class = "station_data"></span></div>
+				<div>Crosswalks Leading to Station? <span id = "crosswalks" class = "station_data"></span></div>
+				<div>Crosswalk Condition: <span id = "crosswalk_cond" class = "station_data"></span></div>
+				<div>Signal Near Station? <span id = "signal" class = "station_data"></span></div>
+				<div>Pedestrian Signal Near Station? <span id = "ped_signal" class = "station_data"></span></div>
+				
+            
+            </div>
 			<h3>Lot Information</h3>
 			<div id="output_div_lots"></div>
+				
+			
         </div>
 		
         <script> 
