@@ -231,7 +231,7 @@ function details_for_station(e) {
                                 // $('#output_div').html(''); 
                                 // So, use this:
                                 $('.station_data').html('');
-                                
+                                $('#output_div_lots').html(''); 
                                 
                               
 								$('#station_name').html(props['stan_addr']);
@@ -241,6 +241,7 @@ function details_for_station(e) {
 								$('#mode').html(mode_concat(props['mode_rt'],props['mode_cr'],props['mode_brt'],props['mode_other']));
                               
 								if (props['healthy'] != 0) {
+									$('.hide').show();
                                     $('#number_of_bike_spaces').html(no_data_str(props['numberspaces']));
 									$('#number_of_bikes').html(no_data_str(props['numberbikes']));
 									$('#bike_racks').html(no_data_str(props['rack_type']));
@@ -256,7 +257,8 @@ function details_for_station(e) {
 									//$('#').html();
 									
 								} else {
-									tmp += '<p>No Bicycle Parking Data Collected at This Station <\p>'
+									$('#no_data').html('No Bicycle Parking Data Collected at This Station')
+									$('.hide').hide();
 								}
 				
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
@@ -272,22 +274,26 @@ function details_for_station(e) {
                                 lotUrl += '&srsname=EPSG:3857';  // Reproject native SRS of data to SRS of map
                                 lotUrl += '&outputformat=json';
                                 lotUrl += '&cql_filter=' + cqlFilter;
+								
                                
-                                // ajax request for LOTS data
-                                $.ajax({ url		: lotUrl,
-                                         type		: 'GET',
-                                         dataType	: 'json',
-                                                      // 'success' handler for WFS request for LOTS data
-                                                      // is defined out-of-line, above
-                                         success	: success_handler_for_lots_data,
-                                                      // 'error' handler for WFS request for LOTS data
-                                                      // is defined here, in-line right here
-                                         error      : function (qXHR, textStatus, errorThrown ) {
-                                                        alert('WFS request to get LOTS data for ' + text + 'failed.\n' +
-                                                              'Status: ' + textStatus + '\n' +
-                                                              'Error:  ' + errorThrown);
-                                                      }
-                                }); // End of 'inner' WFS request - for LOTS data
+                                if (props['lots'] != 0) {
+									// ajax request for LOTS data
+									$.ajax({ url		: lotUrl,
+											 type		: 'GET',
+											 dataType	: 'json',
+														  // 'success' handler for WFS request for LOTS data
+														  // is defined out-of-line, above
+											 success	: success_handler_for_lots_data,
+														  // 'error' handler for WFS request for LOTS data
+														  // is defined here, in-line right here
+											 error      : function (qXHR, textStatus, errorThrown ) {
+															alert('WFS request to get LOTS data for ' + text + 'failed.\n' +
+																  'Status: ' + textStatus + '\n' +
+																  'Error:  ' + errorThrown);
+														  }
+									}); // End of 'inner' WFS request - for LOTS data
+								};
+								
                             }, // end of 'success' handler for 'outer' WFS request - for STATION data 
             error       :   function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get STATION data for ' + text + 'failed.\n' +
