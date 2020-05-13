@@ -146,7 +146,6 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     
     var i;
 	var data = []; //create an array to put objects in
-    var tmp_1 = '';//putting outside the loop to be filled multiplicitously
     for (i=0; i < aFeatures.length; i++){
         props = aFeatures[i].getProperties();
 		var obj = {station_name: props['station_name'], lot_id: props['lot_id'], line_id: props['line_id'], mode: props['mode'],
@@ -183,25 +182,6 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
                       colDesc: myColDesc
                     };
 
-        tmp_1 += '<h4>Data for ' + props['station_name'] + ' Lot</h4>';
-        //tmp_1 += '<p>Station Name: ' + props['station_name'] + '<\p>';
-        tmp_1 += '<p>Lot ID: ' + props['lot_id'] + '<\p>';
-        tmp_1 += '<p>Line ID: ' + props['line_id'] + '<\p>';
-        tmp_1 += '<p>Mode: ' + props['mode'] + '<\p>'; // this is split into several columns
-        tmp_1 += '<p>Parking Space Non-HP: ' + props['parking_space_non_hp_1'] + '<\p>';
-        tmp_1 += '<p>Used Spaces Non-HP: ' + props['used_spaces_non_hp_1'] + '<\p>';
-        tmp_1 += '<p>HP Parking Spaces: ' + props['hp_parking_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Used HP Parking Spaces: ' + props['used_hp_parking_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Total Spaces: ' + props['total_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Total Used Spaces: ' + props['total_used_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Total Utilization - All Parking: ' + props['total_utilization_all_parking_1'] + '<\p>';
-        tmp_1 += '<p>Public Parking No HP Spaces: ' + props['publicparkingnohp_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Public Parking No HP Vehicles: ' + props['publicparkingnohp_vehicles_1'] + '<\p>';
-        tmp_1 += '<p>Public Parking No HP Utilization: ' + props['publicparkingnohp_utilization_1'] + '<\p>';
-        tmp_1 += '<p>Cars Not in Marked Spaces: ' + props['cars_not_in_marked_spaces_1'] + '<\p>';
-        tmp_1 += '<p>Lot Ownership: ' + props['lot_ownership_1'] + '<\p>';
-        tmp_1 += '<p>Parking Fee: $' + props['parking_fee_1'] + '<\p>';
-        
     } //end of for loop looping through json response
     
     // For the time being just dump some attribute info into the "output_div."
@@ -209,8 +189,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     // First, clear output_div before putting the newly fetched data into it.
 	$('#output_div_lots').accessibleGrid(myColDesc, myOptions, data);
 
-    console.log("Generation of accessible table has completed.");
-    //$('#output_div_lots').html(tmp_1);  
+    console.log("Generation of accessible table has completed."); 
     
     // Note that the LOTS data is put into accordion panel #2
     // Here, we open accordion panel #2 ... but we need to think if this is really what we want to do...
