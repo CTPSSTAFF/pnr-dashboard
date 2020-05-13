@@ -145,9 +145,43 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     $('#output_div_lots').html(''); 
     
     var i;
+	var data = []; //create an array to put objects in
     var tmp_1 = '';//putting outside the loop to be filled multiplicitously
     for (i=0; i < aFeatures.length; i++){
         props = aFeatures[i].getProperties();
+		var obj = {station_name: props['station_name'], lot_id: props['lot_id'], line_id: props['line_id'], mode: props['mode'],
+					parking_space_non_hp: props['parking_space_non_hp_1'], used_non_hp_spaces: props['used_spaces_non_hp_1'],
+					hp_parking_spaces: props['hp_parking_spaces_1'], used_hp_spaces: props['hp_parking_spaces_1'], total_spaces: props['total_spaces_1'],
+					total_used_spaces: props['total_used_spaces_1'], utilization: props['total_utilization_all_parking_1'], pp_nohp_spaces: props['publicparkingnohp_spaces_1'],
+					pp_nohp_veh: props['publicparkingnohp_vehicles_1'], pp_nohp_util: props['publicparkingnohp_utilization_1'],
+					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: props['parking_fee_1']};
+		data.push(obj);
+		
+		var myColDesc = [ { dataIndex: "station_name",      header: "Station Name", style: "width:100px" },
+						{ dataIndex: "lot_id", header: "Lot ID" },
+						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px"},
+						{ dataIndex: "mode", header: "Mode" },
+						{ dataIndex: "parking_space_non_hp", header: "Parking Space Non-HP" },
+						{ dataIndex: "used_non_hp_spaces", header: "Used Spaces Non-HP" },
+						{ dataIndex: "hp_parking_spaces", header: "HP Parking Spaces" },
+						{ dataIndex: "used_hp_spaces", header: "Used HP Parking Spaces" },
+						{ dataIndex: "total_spaces", header: "Total Spaces" },
+						{ dataIndex: "total_used_spaces", header: "Total Used Spaces" },
+						{ dataIndex: "utilization", header: "Total Utilization - All Parking" },
+						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces" },
+						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles" },
+						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization" },
+						{ dataIndex: "cars", header: "Cars Not In Marked Spaces" },
+						{ dataIndex: "lot_own", header: "Lot Ownership" },
+						{ dataIndex: "park_fee", header: "Parking Fee" },
+                    ];
+                      
+		var myOptions = { divId:   "output_div_lots",
+                      tableId: "table_1",
+                      caption: "Lot Information for " +props['station_name']+ ':',
+                      summary: "This table is really cool.",
+                      colDesc: myColDesc
+                    };
 
         tmp_1 += '<h4>Data for ' + props['station_name'] + ' Lot</h4>';
         //tmp_1 += '<p>Station Name: ' + props['station_name'] + '<\p>';
@@ -173,7 +207,10 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     // For the time being just dump some attribute info into the "output_div."
     // This is, obviously, not what we'll be doing in the finished product.
     // First, clear output_div before putting the newly fetched data into it.
-    $('#output_div_lots').html(tmp_1);  
+	$('#output_div_lots').accessibleGrid(myColDesc, myOptions, data);
+
+    console.log("Generation of accessible table has completed.");
+    //$('#output_div_lots').html(tmp_1);  
     
     // Note that the LOTS data is put into accordion panel #2
     // Here, we open accordion panel #2 ... but we need to think if this is really what we want to do...
@@ -318,7 +355,7 @@ function details_for_station(e) {
 //
 function initialize() {  
     // 0. Initialize the jQueryUI accordion control
-    $('#accordion').accordion({ active: 0, collapsible : true, multiple : true });
+    $('#accordion').accordion({ active: 0, collapsible : true, multiple : true, heightStyle : "content" });
 
     // 1. Initialize OpenLayers map, gets MassGIS basemap service properties by executing AJAX request
     $.ajax({ url: mgis_serviceUrls['topo_features'], jsonp: 'callback', dataType: 'jsonp', data: { f: 'json' }, 
@@ -490,22 +527,6 @@ function initialize() {
                       summary: "This table is really cool.",
                       colDesc: myColDesc
                     };
-                    
-    var data = [ { name: "Alewife",  capacity: 750,   occupancy: 650 },
-                 { name: "Quincy",   capacity: 1000,  occupancy: 950 },
-                 { name: "Folderol", capacity: 200,   occupancy: 199 },
-                 { name: "Foobar",   capacity: 10000, occupancy: 42 }
-                ];
-
-    // NOTE:
-    //  |   We need some kind of JQ selector here, but what you use is arbitrary.
-    //  |   By convention, I've used the ID of the div into which the table is to be written.
-    //  |
-    // \ /            
-    //  .
-    $('#output_div_lots').accessibleGrid(myColDesc, myOptions, data);
-
-    console.log("Generation of accessible table has completed.");
 
     // End test of generating accessible grid
     
