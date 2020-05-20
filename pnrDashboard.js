@@ -136,9 +136,6 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
         alert('WFS request to get data for lots at station ' + text + ' returned no features.');
         $('#output_div_lots').html('');
         return;
-    } else if (aFeatures.length > 1) {
-        alert('WFS request to get data for station lots ' + text + ' returned ' + aFeatures.length + ' features.');
-        //return;
     }
     
     // Clear out any previous data that might be left in the "output_div_lots" div
@@ -156,23 +153,23 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: props['parking_fee_1']};
 		data.push(obj);
 		
-		var myColDesc = [ { dataIndex: "station_name",      header: "Station Name", style: "width:100px" },
-						{ dataIndex: "lot_id", header: "Lot ID" },
-						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px"},
-						{ dataIndex: "mode", header: "Mode" },
-						{ dataIndex: "parking_space_non_hp", header: "Parking Space Non-HP" },
-						{ dataIndex: "used_non_hp_spaces", header: "Used Spaces Non-HP" },
-						{ dataIndex: "hp_parking_spaces", header: "HP Parking Spaces" },
-						{ dataIndex: "used_hp_spaces", header: "Used HP Parking Spaces" },
-						{ dataIndex: "total_spaces", header: "Total Spaces" },
-						{ dataIndex: "total_used_spaces", header: "Total Used Spaces" },
-						{ dataIndex: "utilization", header: "Total Utilization - All Parking" },
-						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces" },
-						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles" },
-						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization" },
-						{ dataIndex: "cars", header: "Cars Not In Marked Spaces" },
-						{ dataIndex: "lot_own", header: "Lot Ownership" },
-						{ dataIndex: "park_fee", header: "Parking Fee" },
+		var myColDesc = [ { dataIndex: "station_name",      header: "Station Name", style: "width:100px", cls : "colClass" },
+						{ dataIndex: "lot_id", header: "Lot ID", cls : "colClass" },
+						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px", cls : "colClass"},
+						{ dataIndex: "mode", header: "Mode", cls : "colClass" },
+						{ dataIndex: "parking_space_non_hp", header: "Parking Space Non-HP", cls : "colClass" },
+						{ dataIndex: "used_non_hp_spaces", header: "Used Spaces Non-HP", cls : "colClass" },
+						{ dataIndex: "hp_parking_spaces", header: "HP Parking Spaces", cls : "colClass" },
+						{ dataIndex: "used_hp_spaces", header: "Used HP Parking Spaces", cls : "colClass" },
+						{ dataIndex: "total_spaces", header: "Total Spaces", cls : "colClass" },
+						{ dataIndex: "total_used_spaces", header: "Total Used Spaces", cls : "colClass" },
+						{ dataIndex: "utilization", header: "Total Utilization - All Parking", cls : "colClass" },
+						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces", cls : "colClass" },
+						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles", cls : "colClass" },
+						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass" },
+						{ dataIndex: "cars", header: "Cars Not In Marked Spaces", cls : "colClass" },
+						{ dataIndex: "lot_own", header: "Lot Ownership", cls : "colClass" },
+						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" },
                     ];
                       
 		var myOptions = { divId:   "output_div_lots",
@@ -239,9 +236,8 @@ function details_for_station(e) {
                                 size = ol_map.getSize();
                                 view.centerOn(coords, size, [ size[0]/2, size[1]/2 ]);
                                 view.setZoom(16);
-                                // For the time being just dump some attribute info into the "output_div."
-                                // This is, obviously, not what we'll be doing in the finished product.
-                                // First, clear output_div before putting the newly fethed data into it.
+                            
+                                // First, clear output_div before putting the newly fetched data into it.
                                 
                                 // This is too large a sledgehammer for now! -- BK 5/1/2020
                                 // $('#output_div').html(''); 
@@ -487,26 +483,5 @@ function initialize() {
     $(".basemap_radio").change(toggle_basemap);
     // Arm on-change event handler for combo box of MBTA stations
     $("#mbta_stations").change(details_for_station);
-    
-    //ACCESSIBLE GRID TESTING
-    //$(document).ready(function() {           
-    // As you can tell, the interface for the accessible grid plug-in could use a bit more TLC.
-    // At the very least, there is no need for a 'colDesc' parameter in addition to the 'options' parameter.
-    //
-    var myColDesc = [ { dataIndex: "name",      header: "Station Name", style: "width:500px" },
-                      { dataIndex: "occupancy", header: "Very-very-very-long-winded-column-header" },
-                      { dataIndex: "capacity",  header: "Wowie, zowie", style: "color:red",
-                        renderer: function(val, rec, rowIx, colIx, store) { return val.toLocaleString(); } }
-                    ];
-    //dataIndex will equal props["whatever"]
-                      
-    var myOptions = { divId:   "output_div_lots",
-                      tableId: "table_1",
-                      caption: "This is the caption for my table.",
-                      summary: "This table is really cool.",
-                      colDesc: myColDesc
-                    };
-
-    // End test of generating accessible grid
     
 } // initialize()
