@@ -20,6 +20,14 @@ var mgis_basemap_layers = { 'topo_features'     : null,     // bottom layer
 // OpenLayers layer for OpenStreetMap basesmap layer
 var osm_basemap_layer = null; 
 
+// Define OpenLayers vector layer - will overlay the base layer
+var oHighlightLayer = new ol.layer.Vector({source: new ol.source.Vector({ wrapX: false }) });
+// Define style for vector layer, and set the vector layer's style to it
+var myVectorStyle = new ol.style.Style({ fill	: new ol.style.Fill({ color: 'rgba(255,0,0,0.5)' }), 
+                                         stroke : new ol.style.Stroke({ color: 'rgba(0,0,255,1.0)', width: 3.0})
+                                       });
+oHighlightLayer.setStyle(myVectorStyle);
+
 // Varioius things for WMS and WFS layers
 // First, folderol to allow the app to run on appsrvr3 as well as "in the wild"
 szServerRoot = location.protocol + '//' + location.hostname;
@@ -126,6 +134,13 @@ function no_data_str(data) {
 	return out_str
 }
 
+function myformatter(x) {
+	x = x*100;
+	x = x.toFixed(0);
+	x = x+'%';
+	return x
+}
+
 // 'success' handler for WFS request for LOTS data
 function success_handler_for_lots_data(data, textStatus, jqXHR) {	
 	var text = $("#mbta_stations option:selected").text();
@@ -143,7 +158,13 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     
     var i;
 	var data = []; //create an array to put objects in
+	//get the source for the vector layer
+	var vSource = oHighlightLayer.getSource();
+	//Clear anything that might previously be in the vector layer
+    vSource.clear();
     for (i=0; i < aFeatures.length; i++){
+		vSource.addFeature(aFeatures[i]);
+		
         props = aFeatures[i].getProperties();
 		var obj = {station_name: props['station_name'], lot_id: props['lot_id'], line_id: props['line_id'], mode: props['mode'],
 					parking_space_non_hp: props['parking_space_non_hp_1'], used_non_hp_spaces: props['used_spaces_non_hp_1'],
@@ -153,7 +174,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: props['parking_fee_1']};
 		data.push(obj);
 		
-		var myColDesc = [ { dataIndex: "station_name",      header: "Station Name", style: "width:100px", cls : "colClass" },
+		var myColDesc = [ { dataIndex: "station_name", header: "Station Name", style: "width:100px", cls : "colClass" },
 						{ dataIndex: "lot_id", header: "Lot ID", cls : "colClass" },
 						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px", cls : "colClass"},
 						{ dataIndex: "mode", header: "Mode", cls : "colClass" },
@@ -163,10 +184,10 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 						{ dataIndex: "used_hp_spaces", header: "Used HP Parking Spaces", cls : "colClass" },
 						{ dataIndex: "total_spaces", header: "Total Spaces", cls : "colClass" },
 						{ dataIndex: "total_used_spaces", header: "Total Used Spaces", cls : "colClass" },
-						{ dataIndex: "utilization", header: "Total Utilization - All Parking", cls : "colClass" },
+						{ dataIndex: "utilization", header: "Total Utilization - All Parking", cls : "colClass", renderer: myformatter },
 						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces", cls : "colClass" },
 						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles", cls : "colClass" },
-						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass" },
+						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass",renderer: myformatter  },
 						{ dataIndex: "cars", header: "Cars Not In Marked Spaces", cls : "colClass" },
 						{ dataIndex: "lot_own", header: "Lot Ownership", cls : "colClass" },
 						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" },
@@ -180,7 +201,9 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
                     };
 
     } //end of for loop looping through json response
-    
+    //set the source of the vector layer to the data accumulated in the loop
+	oHighlightLayer.setSource(vSource);
+	
     // For the time being just dump some attribute info into the "output_div."
     // This is, obviously, not what we'll be doing in the finished product.
     // First, clear output_div before putting the newly fetched data into it.
@@ -423,7 +446,8 @@ function initialize() {
         ol_map = new ol.Map({ layers: [  osm_basemap_layer,
                                          mgis_basemap_layers['topo_features'],
                                          mgis_basemap_layers['structures'],
-                                         mgis_basemap_layers['basemap_features']
+                                         mgis_basemap_layers['basemap_features'],
+										 oHighlightLayer
                                       ],
                                target: 'map',
                                view:   new ol.View({ center: ol.proj.fromLonLat([-71.0589, 42.3601]), zoom: 11 })
