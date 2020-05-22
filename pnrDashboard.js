@@ -197,7 +197,8 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
                       tableId: "table_1",
                       caption: "Lot Information for " +props['station_name']+ ':',
                       summary: "This table is really cool.",
-                      colDesc: myColDesc
+                      colDesc: myColDesc,
+					  capcls: "capClass"
                     };
 
     } //end of for loop looping through json response

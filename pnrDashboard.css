@@ -69,3 +69,8 @@
 .colClass {
     text-align: center;
 }
+.capClass {
+	font-size: medium;
+	font-weight: bold;
+	text-align: left;
+}
