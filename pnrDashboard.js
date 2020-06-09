@@ -43,6 +43,8 @@ szWFSserverRoot = szServerRoot + '/wfs';
 // OpenLayers 'map' object:
 var ol_map = null;
 
+// Global Stations Names for Combo Box
+var aStationNames = []
 
 // On-change event handler for radio buttons to chose basemap
 function toggle_basemap(e) {
@@ -87,9 +89,6 @@ function mode_concat(f1, f2, f3, f4) {
 	});
 	
 	for (i = 0; i < filt_modes_arr.length; i++) {
-		//console.log(modes_arr)
-		//console.log(filt_modes_arr.length)
-		console.log(filt_modes_arr[i])
 		if (filt_modes_arr[i] != null) {
 			if (filt_modes_arr[i] == "RT") {
 				if (filt_modes_arr.length > 1){
@@ -133,14 +132,14 @@ function no_data_str(data) {
 	}
 	return out_str
 }
-
+//use to take decimals and turn into percents
 function myformatter(x) {
 	x = x*100;
 	x = x.toFixed(0);
 	x = x+'%';
 	return x
 }
-
+//if parking fee is zero, say permit only, else format
 function myDollar(x) {
 	if (x==0) {
 		x = 'Permit Only'
@@ -229,6 +228,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     $('#accordion').accordion("option", "active", 2)
 } // success_handler_for_lots_data()
 
+// On-change event handler for combo box of Areas with stations???
 
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
@@ -341,7 +341,9 @@ function details_for_station(e) {
 																  'Error:  ' + errorThrown);
 														  }
 									}); // End of 'inner' WFS request - for LOTS data
-								};
+								} else {
+									$('#output_div_lots').html('No Parking Available Near Station')
+								}; //else print that there is no parking near station (e.g. lots = 0)
 								
                             }, // end of 'success' handler for 'outer' WFS request - for STATION data 
             error       :   function (qXHR, textStatus, errorThrown ) {
@@ -475,14 +477,14 @@ function initialize() {
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
 		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
-        szUrl += '&propertyname=st_num,stan_addr,town,town_id';  // The only attribute we need to populate the stations combo box is the station name
+        szUrl += '&propertyname=st_num,stan_addr'; // The only attribute we need to populate the stations combo box is the station name
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
 			 type		: 'GET',
 			 dataType	: 'json',
 			 success	: 	function (data, textStatus, jqXHR) {	
-								var reader = {}, aFeatures = [], i, props, aStationNames = [], tmp, feature_id, stn_name, tmpb, propb, town_id, town, townNames = [];
+								var reader = {}, aFeatures = [], i, props, tmp, feature_id, stn_name;
                                 reader = new ol.format.GeoJSON();
 								aFeatures = reader.readFeatures(jqXHR.responseText);
 								if (aFeatures.length === 0) {
@@ -508,26 +510,6 @@ function initialize() {
                                     $('#mbta_stations').append($('<option>', { value: aStationNames[i].id,     
                                                                                text : aStationNames[i].station  }));  
                                 }
-								// Get an alphabetically sorted array of area names
-                                for (i = 0; i < aFeatures.length; i++) {
-                                    tmpb = { 'town_id' : 0, 'town' : '' };
-                                    propb = aFeatures[i].getProperties();
-                                    town_id = propb['town_id'];
-                                    town = propb['town'];
-                                    tmpb.town_id = town_id;
-                                    tmpb.town = town;
-                                    townNames.push(tmpb);
-                                }
-                                townNames.sort(function(a,b) { 
-                                    if(a.town < b.town) { return -1; }
-                                    if(a.town > b.town) { return 1; }
-                                    return 0;
-                                });
-                                for (i = 0; i < townNames.length; i++) {
-                                    $('#area').append($('<option>', { value: townNames[i].town_id,     
-                                                                      text : townNames[i].town  }));  
-                                }
-								
                             }, // success handler
             error		: 	function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get list of MBTA stations failed.\n' +
@@ -535,7 +517,56 @@ function initialize() {
 										'Error:  ' + errorThrown);
 							} // error handler
     });
-       
+	//2.5 Populate combo box for Areas
+	//    submit WFS request via AJAX to get relevant data
+	var szUrl = szWFSserverRoot + '?';
+		szUrl += '&service=wfs';
+		szUrl += '&version=1.0.0';
+		szUrl += '&request=getfeature';
+		szUrl += '&typename=ctps_pg:ctps_pnr_areas_w_stations';
+        szUrl += '&propertyname=town,town_id';  // The only attribute we need to populate the stations combo box is the area name (town)
+		szUrl += '&outputformat=json';
+	$.ajax({ url		: szUrl,
+			 type		: 'GET',
+			 dataType	: 'json',
+			 success	: 	function (data, textStatus, jqXHR) {	
+								var reader = {}, aFeatures = [], i, props, areaNames = [], tmp, town_id, town;
+                                reader = new ol.format.GeoJSON();
+								aFeatures = reader.readFeatures(jqXHR.responseText);
+								if (aFeatures.length === 0) {
+									alert('WFS request to get list of MBTA stations returned no features.');
+									return;
+								}  
+								// Get an array of area names sorted by town id
+                                for (i = 0; i < aFeatures.length; i++) {
+                                    tmp = { 'town_id' : 0, 'town' : '' };
+                                    prop = aFeatures[i].getProperties();
+                                    town_id = prop['town_id'];
+                                    town = prop['town'];
+                                    tmp.town_id = town_id;
+                                    tmp.town = town;
+                                    areaNames.push(tmp);
+                                }
+                                areaNames.sort(function(a,b) { 
+                                    if(a.town_id < b.town_id) { return -1; } //the town_ids are in the order the towns should be in
+                                    if(a.town_id > b.town_id) { return 1; }
+                                    return 0;
+                                });
+                                for (i = 0; i < areaNames.length; i++) {
+                                    $('#area').append($('<option>', { value: areaNames[i].town_id,     
+                                                                      text : areaNames[i].town  }));  
+                                }
+								
+                            }, // success handler
+            error		: 	function (qXHR, textStatus, errorThrown ) {
+								alert('WFS request to get list of areas with MBTA stations failed.\n' +
+										'Status: ' + textStatus + '\n' +
+										'Error:  ' + errorThrown);
+							} // error handler
+    });
+
+
+	
     // 3. Arm event handlers for UI controls
     // Arm event handler for basemap selection
     $(".basemap_radio").change(toggle_basemap);
