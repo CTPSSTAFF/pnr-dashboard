@@ -23,7 +23,7 @@ var osm_basemap_layer = null;
 // Define OpenLayers vector layer - will overlay the base layer
 var oHighlightLayer = new ol.layer.Vector({source: new ol.source.Vector({ wrapX: false }) });
 // Define style for vector layer, and set the vector layer's style to it
-var myVectorStyle = new ol.style.Style({ fill	: new ol.style.Fill({ color: 'rgba(255,0,0,0.5)' }), 
+var myVectorStyle = new ol.style.Style({ fill	: new ol.style.Fill({ color: 'rgba(193,66,66,0.4)' }), 
                                          stroke : new ol.style.Stroke({ color: 'rgba(0,0,255,1.0)', width: 3.0})
                                        });
 oHighlightLayer.setStyle(myVectorStyle);
@@ -68,12 +68,12 @@ function toggle_basemap(e) {
 //fix -1/0/null 
 function neg_zero_null(val) {
 	var ret = null;
-	if (val = "-1") {
+	if (val == "-1") {
 		ret = "Yes";
-	} else if (val = "0") {
+	} else if (val == "0") {
 		ret = "No";
 	} else {
-		ret = "No Data Collected";
+		ret = "Unknown";
 	}
 	return ret;
 }//end neg_zero_null
@@ -127,7 +127,7 @@ function mode_concat(f1, f2, f3, f4) {
 function no_data_str(data) {
 	var out_str;
 	if (data == null || data == '') {
-		out_str = 'No Data Collected';
+		out_str = 'Unknown';
 	} else {
 		out_str = data
 	}
@@ -139,6 +139,17 @@ function myformatter(x) {
 	x = x.toFixed(0);
 	x = x+'%';
 	return x
+}
+
+function myDollar(x) {
+	if (x==0) {
+		x = 'Permit Only'
+	} else {
+		x = x.toFixed(1);
+		x = '$'+x;
+	}
+	return x
+	
 }
 
 // 'success' handler for WFS request for LOTS data
@@ -167,17 +178,21 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 		
         props = aFeatures[i].getProperties();
 		var obj = {station_name: props['station_name'], lot_id: props['lot_id'], line_id: props['line_id'], mode: props['mode'],
+					pp_nohp_spaces: props['publicparkingnohp_spaces_1'],
+					pp_nohp_veh: props['publicparkingnohp_vehicles_1'], pp_nohp_util: props['publicparkingnohp_utilization_1'],
 					parking_space_non_hp: props['parking_space_non_hp_1'], used_non_hp_spaces: props['used_spaces_non_hp_1'],
 					hp_parking_spaces: props['hp_parking_spaces_1'], used_hp_spaces: props['hp_parking_spaces_1'], total_spaces: props['total_spaces_1'],
-					total_used_spaces: props['total_used_spaces_1'], utilization: props['total_utilization_all_parking_1'], pp_nohp_spaces: props['publicparkingnohp_spaces_1'],
-					pp_nohp_veh: props['publicparkingnohp_vehicles_1'], pp_nohp_util: props['publicparkingnohp_utilization_1'],
-					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: props['parking_fee_1']};
+					total_used_spaces: props['total_used_spaces_1'], utilization: props['total_utilization_all_parking_1'], 
+					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: myDollar(props['parking_fee_1'])};
 		data.push(obj);
 		
 		var myColDesc = [ { dataIndex: "station_name", header: "Station Name", style: "width:100px", cls : "colClass" },
 						{ dataIndex: "lot_id", header: "Lot ID", cls : "colClass" },
 						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px", cls : "colClass"},
 						{ dataIndex: "mode", header: "Mode", cls : "colClass" },
+						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces", cls : "colClass" },
+						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles", cls : "colClass" },
+						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass",renderer: myformatter  },
 						{ dataIndex: "parking_space_non_hp", header: "Parking Space Non-HP", cls : "colClass" },
 						{ dataIndex: "used_non_hp_spaces", header: "Used Spaces Non-HP", cls : "colClass" },
 						{ dataIndex: "hp_parking_spaces", header: "HP Parking Spaces", cls : "colClass" },
@@ -185,9 +200,6 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 						{ dataIndex: "total_spaces", header: "Total Spaces", cls : "colClass" },
 						{ dataIndex: "total_used_spaces", header: "Total Used Spaces", cls : "colClass" },
 						{ dataIndex: "utilization", header: "Total Utilization - All Parking", cls : "colClass", renderer: myformatter },
-						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces", cls : "colClass" },
-						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles", cls : "colClass" },
-						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass",renderer: myformatter  },
 						{ dataIndex: "cars", header: "Cars Not In Marked Spaces", cls : "colClass" },
 						{ dataIndex: "lot_own", header: "Lot Ownership", cls : "colClass" },
 						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" },
@@ -230,7 +242,7 @@ function details_for_station(e) {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
+		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
 		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
@@ -291,6 +303,7 @@ function details_for_station(e) {
 									$('#signal').html(neg_zero_null(props['sigints_yn']));
 									$('#ped_signal').html(neg_zero_null(props['sigints_pedind_yn']));
 									//$('#').html();
+									
 									
 								} else {
 									$('#no_data').html('No Bicycle Parking Data Collected at This Station')
@@ -461,15 +474,15 @@ function initialize() {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
-        szUrl += '&propertyname=st_num,stan_addr';  // The only attribute we need to populate the combo box is the station name
+		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
+        szUrl += '&propertyname=st_num,stan_addr,town,town_id';  // The only attribute we need to populate the stations combo box is the station name
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
 			 type		: 'GET',
 			 dataType	: 'json',
 			 success	: 	function (data, textStatus, jqXHR) {	
-								var reader = {}, aFeatures = [], i, props, aStationNames = [], tmp, feature_id, stn_name;
+								var reader = {}, aFeatures = [], i, props, aStationNames = [], tmp, feature_id, stn_name, tmpb, propb, town_id, town, townNames = [];
                                 reader = new ol.format.GeoJSON();
 								aFeatures = reader.readFeatures(jqXHR.responseText);
 								if (aFeatures.length === 0) {
@@ -495,6 +508,26 @@ function initialize() {
                                     $('#mbta_stations').append($('<option>', { value: aStationNames[i].id,     
                                                                                text : aStationNames[i].station  }));  
                                 }
+								// Get an alphabetically sorted array of area names
+                                for (i = 0; i < aFeatures.length; i++) {
+                                    tmpb = { 'town_id' : 0, 'town' : '' };
+                                    propb = aFeatures[i].getProperties();
+                                    town_id = propb['town_id'];
+                                    town = propb['town'];
+                                    tmpb.town_id = town_id;
+                                    tmpb.town = town;
+                                    townNames.push(tmpb);
+                                }
+                                townNames.sort(function(a,b) { 
+                                    if(a.town < b.town) { return -1; }
+                                    if(a.town > b.town) { return 1; }
+                                    return 0;
+                                });
+                                for (i = 0; i < townNames.length; i++) {
+                                    $('#area').append($('<option>', { value: townNames[i].town_id,     
+                                                                      text : townNames[i].town  }));  
+                                }
+								
                             }, // success handler
             error		: 	function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get list of MBTA stations failed.\n' +
