@@ -13,7 +13,7 @@ The initial setup involves two distinct sets of steps:
 ### PostgreSQL Database
 Database setup involves steps performed at the "cluster" and at the "database" level.
 
-#### Cluster-level Setup
+#### PostgreSQL Cluster-level Setup
 At the level of the entire "cluster" of databases running on the host,
 create the the following user- and group-level "roles":  
 * __pnr_admin__
@@ -47,7 +47,7 @@ __pnr_viewer__ - This is a "login" role.
     * Inerhit rights from parent role? __Y__
     * All others __N__
 
-#### Database-level Setup
+#### PostgreSQL Database-level Setup
 * Create an empty database named __pnr__.
 * Add a schema named __pnr_admin__.
 * Set the options on the "Security" tab for the __pnr_schema__ as follows:  
