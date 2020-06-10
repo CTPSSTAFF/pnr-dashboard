@@ -39,7 +39,7 @@ __pnr_dba__  - This is a "group" role.
     * Roles: pnr_dba
 
 __pnr_editor__  \(This would be a "group" role.\)    
-_Do not create this group role; it is not needed for the PNR app.
+_Do not create this group role; it is not needed for the PNR app._
 
 __pnr_viewer__ - This is a "login" role.  
 * Privileges  
