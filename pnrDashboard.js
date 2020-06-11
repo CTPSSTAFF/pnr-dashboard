@@ -140,8 +140,8 @@ function myformatter(x) {
 	return x
 }
 //if parking fee is zero, say permit only, else format
-function myDollar(x) {
-	if (x==0) {
+function myDollar(x,y) {
+	if (y=='Yes') {
 		x = 'Permit Only'
 	} else {
 		x = x.toFixed(2);
@@ -182,23 +182,23 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 					parking_space_non_hp: props['parking_space_non_hp_1'], used_non_hp_spaces: props['used_spaces_non_hp_1'],
 					hp_parking_spaces: props['hp_parking_spaces_1'], used_hp_spaces: props['hp_parking_spaces_1'], total_spaces: props['total_spaces_1'],
 					total_used_spaces: props['total_used_spaces_1'], utilization: props['total_utilization_all_parking_1'], 
-					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: myDollar(props['parking_fee_1'])};
+					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: myDollar(props['parking_fee_1'], props['permitrequired_1'])};
 		data.push(obj);
 		
 		var myColDesc = [ { dataIndex: "station_name", header: "Station Name", style: "width:100px", cls : "colClass" },
 						{ dataIndex: "lot_id", header: "Lot ID", cls : "colClass" },
 						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px", cls : "colClass"},
 						{ dataIndex: "mode", header: "Mode", cls : "colClass" },
-						{ dataIndex: "pp_nohp_spaces", header: "Public Parking No HP Spaces", cls : "colClass" },
-						{ dataIndex: "pp_nohp_veh", header: "Public Parking No HP Vehicles", cls : "colClass" },
-						{ dataIndex: "pp_nohp_util", header: "Public Parking No HP Utilization", cls : "colClass",renderer: myformatter  },
-						{ dataIndex: "parking_space_non_hp", header: "Parking Space Non-HP", cls : "colClass" },
-						{ dataIndex: "used_non_hp_spaces", header: "Used Spaces Non-HP", cls : "colClass" },
-						{ dataIndex: "hp_parking_spaces", header: "HP Parking Spaces", cls : "colClass" },
-						{ dataIndex: "used_hp_spaces", header: "Used HP Parking Spaces", cls : "colClass" },
-						{ dataIndex: "total_spaces", header: "Total Spaces", cls : "colClass" },
-						{ dataIndex: "total_used_spaces", header: "Total Used Spaces", cls : "colClass" },
-						{ dataIndex: "utilization", header: "Total Utilization - All Parking", cls : "colClass", renderer: myformatter },
+						{ dataIndex: "pp_nohp_spaces", header: "Public Parking Non-Accessible Spaces", cls : "colClass" },
+						{ dataIndex: "pp_nohp_veh", header: "Occupied Public Parking Non-Accessible Spaces", cls : "colClass" },
+						{ dataIndex: "pp_nohp_util", header: "Utilization of Public Parking Non-Accessible Spaces", cls : "colClass",renderer: myformatter  },
+						{ dataIndex: "parking_space_non_hp", header: "Non-Accessible Parking Spaces", cls : "colClass" },
+						{ dataIndex: "used_non_hp_spaces", header: "Occupied Non-Accessible Parking Spaces", cls : "colClass" },
+						{ dataIndex: "hp_parking_spaces", header: "Accessible Parking Spaces", cls : "colClass" },
+						{ dataIndex: "used_hp_spaces", header: "Occupied Accessible Parking Spaces", cls : "colClass" },
+						{ dataIndex: "total_spaces", header: "All Total Parking Spaces", cls : "colClass" },
+						{ dataIndex: "total_used_spaces", header: "All Total Occupied Spaces", cls : "colClass" },
+						{ dataIndex: "utilization", header: "Utilization of All Parking Spaces", cls : "colClass", renderer: myformatter },
 						{ dataIndex: "cars", header: "Cars Not In Marked Spaces", cls : "colClass" },
 						{ dataIndex: "lot_own", header: "Lot Ownership", cls : "colClass" },
 						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" },
