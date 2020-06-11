@@ -233,28 +233,6 @@ function details_for_areas(b) {
 	var value = +$("#area").val(); //town_id
     var text = $("#area option:selected").text(); //town name
 	
-	var opts, opt, i;
-	var opts = $('#mbta_stations > option');
-	for (i = 0; i < opts.length; i++) {
-		opt = opts[i]
-		if (value != 0) { //if value != aStationNames[i]town_id
-			opt.disabled = true;
-		} else { //if value = station town_id
-			opt.disabled = false;
-		}
-	}/*
-	if (value = 0) {
-		//clean up combo box
-		//aStationNames
-		//return
-		console.log("return")
-	} else { //filter/disable the stations not in the selected area
-		//for (i = 0; i < aStationNames.length; i++) {
-			//$('#mbta_stations select option[value="' + some_value + '"]').prop('disabled', true);
-		//}
-		console.log("else")
-	}*/
-	
 	
 	var cqlFilter = "(town_id='" + value + "')";
 	var szUrl = szWFSserverRoot + '?';
@@ -294,7 +272,18 @@ function details_for_areas(b) {
 										'Error:  ' + errorThrown);
 							} // error handler for WFS request for STATION data
 	});
-	
+	var opts, opt, i;
+	var opts = $('#mbta_stations > option');
+	for (i = 0; i < opts.length; i++) {
+		opt = opts[i]
+		if (value == aStationNames[i].town_id) { //if value == station town_id
+			opt.disabled = false;
+		} else if (value == 0){ //if no area is selected (like after one was selected)
+			opt.disabled = false;
+		} else { //if value != aStationNames[i]town_id
+			opt.disabled = true;
+		}
+	}
 }
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
@@ -543,7 +532,7 @@ function initialize() {
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
 		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
-        szUrl += '&propertyname=st_num,stan_addr'; // The only attribute we need to populate the stations combo box is the station name
+        szUrl += '&propertyname=st_num,stan_addr,town_id'; // The only attribute we need to populate the stations combo box is the station name
 		szUrl += '&outputformat=json';
 	
 	$.ajax({ url		: szUrl,
@@ -565,7 +554,7 @@ function initialize() {
                                     stn_name = props['stan_addr'];
                                     tmp.id = feature_id;
                                     tmp.station = stn_name;
-									//ADD TOWN_ID
+									tmp.town_id = props['town_id'];//ADD TOWN_ID
                                     aStationNames.push(tmp);
                                 }
                                 aStationNames.sort(function(a,b) { 
