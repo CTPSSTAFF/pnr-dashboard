@@ -44,7 +44,7 @@ szWFSserverRoot = szServerRoot + '/wfs';
 var ol_map = null;
 
 // Global Stations Names for Combo Box
-var aStationNames = []
+var aStationNames = [];
 
 // On-change event handler for radio buttons to chose basemap
 function toggle_basemap(e) {
@@ -144,7 +144,7 @@ function myDollar(x) {
 	if (x==0) {
 		x = 'Permit Only'
 	} else {
-		x = x.toFixed(1);
+		x = x.toFixed(2);
 		x = '$'+x;
 	}
 	return x
@@ -229,7 +229,73 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 } // success_handler_for_lots_data()
 
 // On-change event handler for combo box of Areas with stations???
-
+function details_for_areas(b) {
+	var value = +$("#area").val(); //town_id
+    var text = $("#area option:selected").text(); //town name
+	
+	var opts, opt, i;
+	var opts = $('#mbta_stations > option');
+	for (i = 0; i < opts.length; i++) {
+		opt = opts[i]
+		if (value != 0) { //if value != aStationNames[i]town_id
+			opt.disabled = true;
+		} else { //if value = station town_id
+			opt.disabled = false;
+		}
+	}/*
+	if (value = 0) {
+		//clean up combo box
+		//aStationNames
+		//return
+		console.log("return")
+	} else { //filter/disable the stations not in the selected area
+		//for (i = 0; i < aStationNames.length; i++) {
+			//$('#mbta_stations select option[value="' + some_value + '"]').prop('disabled', true);
+		//}
+		console.log("else")
+	}*/
+	
+	
+	var cqlFilter = "(town_id='" + value + "')";
+	var szUrl = szWFSserverRoot + '?';
+		szUrl += '&service=wfs';
+		szUrl += '&version=1.0.0';
+		szUrl += '&request=getfeature';
+		szUrl += '&typename=ctps_pg:ctps_pnr_areas_w_stations';
+		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
+		szUrl += '&outputformat=json';
+		szUrl += '&cql_filter=' + cqlFilter;
+		
+	//ajax request for AREAS
+	$.ajax({ url		: szUrl,
+			 type		: 'GET',
+			 dataType	: 'json',
+			 success	: 	function (data, textStatus, jqXHR) {	
+                                var reader, aFeatures = [], props = {}, point, coords, view, size;
+								reader = new ol.format.GeoJSON();
+								aFeatures = reader.readFeatures(jqXHR.responseText);
+								if (aFeatures.length === 0) {
+									alert('WFS request to get data for station ' + text + ' returned no features.');
+									return;
+								} else if (aFeatures.length > 1) {
+                                    alert('WFS request to get data for station ' + text + ' returned ' + aFeatures.length + ' features.');
+                                    return;
+                                }
+								var x = 0
+                                props = aFeatures[0].getProperties();
+                                // We center the map on the feature.
+								ol_map.getView().fit(aFeatures[0].getGeometry(), ol_map.getSize());
+								
+								
+							},
+		error       :   function (qXHR, textStatus, errorThrown ) {
+								alert('WFS request to get AREA data for ' + text + 'failed.\n' +
+										'Status: ' + textStatus + '\n' +
+										'Error:  ' + errorThrown);
+							} // error handler for WFS request for STATION data
+	});
+	
+}
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
     var value = +$("#mbta_stations").val();
@@ -499,6 +565,7 @@ function initialize() {
                                     stn_name = props['stan_addr'];
                                     tmp.id = feature_id;
                                     tmp.station = stn_name;
+									//ADD TOWN_ID
                                     aStationNames.push(tmp);
                                 }
                                 aStationNames.sort(function(a,b) { 
@@ -570,7 +637,8 @@ function initialize() {
     // 3. Arm event handlers for UI controls
     // Arm event handler for basemap selection
     $(".basemap_radio").change(toggle_basemap);
-    // Arm on-change event handler for combo box of MBTA stations
+    // Arm on-change event handler for combo box of MBTA stations and area
     $("#mbta_stations").change(details_for_station);
+	$("#area").change(details_for_areas);
     
 } // initialize()
