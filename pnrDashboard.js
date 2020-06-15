@@ -238,10 +238,13 @@ function details_for_areas(b) {
     // If option value is 0, simply enable all options in the combo box, and return.
     // No need to do WFS request.
     if (value === 0) {
-        for (i = 1; i < opts.length; i++) {
-            opt = opts[i];
-            opt.disabled = false;
-        }
+        $('#mbta_stations').empty();
+		$('#mbta_stations').append($('<option>', { value: 0,     
+												   text : 'Select a station'  }));
+		for (i = 0; i < aStationNames.length; i++) {
+			$('#mbta_stations').append($('<option>', { value: aStationNames[i].id,     
+													   text : aStationNames[i].station  }));  
+		}
         return;
     }
 	
@@ -275,6 +278,18 @@ function details_for_areas(b) {
                                 props = aFeatures[0].getProperties();
                                 // We center the map on the feature.
 								ol_map.getView().fit(aFeatures[0].getGeometry(), ol_map.getSize());
+								
+								//clear combo box
+								$('#mbta_stations').empty();
+								$('#mbta_stations').append($('<option>', { value: 0,     
+                                                                           text : 'Select a station'  }));
+								for (i = 0; i < aStationNames.length; i++) {
+									if (value == aStationNames[i].town_id){
+										$('#mbta_stations').append($('<option>', { value: aStationNames[i].id,     
+																				   text : aStationNames[i].station  })); 
+									}
+                                     
+                                }
 								
                                 // Note that we start with opts[1] because the 0th element contains no real data.
 								for (i = 1; i < opts.length; i++) {
