@@ -232,6 +232,18 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 function details_for_areas(b) {
 	var value = +$("#area").val(); //town_id
     var text = $("#area option:selected").text(); //town name
+    var opts, opt, i, j;
+    opts = $('#mbta_stations > option');
+    
+    // If option value is 0, simply enable all options in the combo box, and return.
+    // No need to do WFS request.
+    if (value === 0) {
+        for (i = 1; i < opts.length; i++) {
+            opt = opts[i];
+            opt.disabled = false;
+        }
+        return;
+    }
 	
 	
 	var cqlFilter = "(town_id='" + value + "')";
@@ -264,7 +276,18 @@ function details_for_areas(b) {
                                 // We center the map on the feature.
 								ol_map.getView().fit(aFeatures[0].getGeometry(), ol_map.getSize());
 								
-								
+                                // Note that we start with opts[1] because the 0th element contains no real data.
+								for (i = 1; i < opts.length; i++) {
+									opt = opts[i];
+                                    j = i - 1; // j is index into aStationNames
+                                    // Debug
+                                    // console.log('i = ' + i + ' opt.value = ' + opt.value + ' aStationNames[i].town_id = ' + aStationNames[j].town_id);
+									if (value == aStationNames[j].town_id) { //if value == station town_id
+										opt.disabled = false; 
+									} else { //if value != aStationNames[i]town_id
+										opt.disabled = true;
+									}
+								}							
 							},
 		error       :   function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get AREA data for ' + text + 'failed.\n' +
@@ -272,18 +295,7 @@ function details_for_areas(b) {
 										'Error:  ' + errorThrown);
 							} // error handler for WFS request for STATION data
 	});
-	var opts, opt, i;
-	var opts = $('#mbta_stations > option');
-	for (i = 0; i < opts.length; i++) {
-		opt = opts[i]
-		if (value == aStationNames[i].town_id) { //if value == station town_id
-			opt.disabled = false;
-		} else if (value == 0){ //if no area is selected (like after one was selected)
-			opt.disabled = false;
-		} else { //if value != aStationNames[i]town_id
-			opt.disabled = true;
-		}
-	}
+	
 }
 // On-change event handler for combo box of MBTA stations
 function details_for_station(e) {
