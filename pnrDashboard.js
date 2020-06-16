@@ -180,9 +180,10 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 					pp_nohp_spaces: props['publicparkingnohp_spaces_1'],
 					pp_nohp_veh: props['publicparkingnohp_vehicles_1'], pp_nohp_util: props['publicparkingnohp_utilization_1'],
 					parking_space_non_hp: props['parking_space_non_hp_1'], used_non_hp_spaces: props['used_spaces_non_hp_1'],
-					hp_parking_spaces: props['hp_parking_spaces_1'], used_hp_spaces: props['hp_parking_spaces_1'], total_spaces: props['total_spaces_1'],
+					hp_parking_spaces: props['hp_parking_spaces_1'], used_hp_spaces: props['used_hp_parking_spaces_1'], total_spaces: props['total_spaces_1'],
 					total_used_spaces: props['total_used_spaces_1'], utilization: props['total_utilization_all_parking_1'], 
-					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], park_fee: myDollar(props['parking_fee_1'], props['permitrequired_1'])};
+					cars: props['cars_not_in_marked_spaces_1'], lot_own: props['lot_ownership_1'], 
+					park_fee: myDollar(props['parking_fee_1'], props['permitrequired_1'])};
 		data.push(obj);
 		
 		var myColDesc = [ { dataIndex: "station_name", header: "Station Name", style: "width:100px", cls : "colClass" },
@@ -290,19 +291,7 @@ function details_for_areas(b) {
 									}
                                      
                                 }
-								
-                                // Note that we start with opts[1] because the 0th element contains no real data.
-								for (i = 1; i < opts.length; i++) {
-									opt = opts[i];
-                                    j = i - 1; // j is index into aStationNames
-                                    // Debug
-                                    // console.log('i = ' + i + ' opt.value = ' + opt.value + ' aStationNames[i].town_id = ' + aStationNames[j].town_id);
-									if (value == aStationNames[j].town_id) { //if value == station town_id
-										opt.disabled = false; 
-									} else { //if value != aStationNames[i]town_id
-										opt.disabled = true;
-									}
-								}							
+															
 							},
 		error       :   function (qXHR, textStatus, errorThrown ) {
 								alert('WFS request to get AREA data for ' + text + 'failed.\n' +
@@ -324,7 +313,7 @@ function details_for_station(e) {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
+		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
 		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
@@ -558,7 +547,7 @@ function initialize() {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename=ctps_pg:ctps_pnr_stations_points';
+		szUrl += '&typename=ctps_pg:ctps_pnr_station_points';
         szUrl += '&propertyname=st_num,stan_addr,town_id'; // The only attribute we need to populate the stations combo box is the station name
 		szUrl += '&outputformat=json';
 	
