@@ -167,6 +167,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     $('#output_div_lots').html(''); 
     
     var i;
+	var ppnas=0, oppnas=0, uppnas=0, naps=0, onaps=0, aps=0, oaps=0, atps=0, atos=0, uaps=0, cnims=0;
 	var data = []; //create an array to put objects in
 	//get the source for the vector layer
 	var vSource = oHighlightLayer.getSource();
@@ -186,6 +187,33 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 					park_fee: myDollar(props['parking_fee_1'], props['permitrequired_1'])};
 		data.push(obj);
 		
+		//create variables to put in new object
+		if (aFeatures.length > 1){
+			ppnas += parseInt(props['publicparkingnohp_spaces_1']);
+			oppnas += parseInt(props['publicparkingnohp_vehicles_1']);
+			naps += parseInt(props['parking_space_non_hp_1']);
+			onaps += parseInt(props['used_spaces_non_hp_1']);
+			aps += parseInt(props['hp_parking_spaces_1']);
+			oaps += parseInt(props['used_hp_parking_spaces_1']);
+			atps += parseInt(props['total_spaces_1']);
+			atos += parseInt(props['total_used_spaces_1']);
+			cnims += parseInt(props['cars_not_in_marked_spaces_1']);
+			//create new objects for total row
+			if (i == (aFeatures.length -1)){
+				var total = {station_name: 'Total',lot_id: '', line_id: '', mode: '',
+							pp_nohp_spaces: ppnas,
+							pp_nohp_veh: oppnas, pp_nohp_util: (oppnas/ppnas),
+							parking_space_non_hp: naps, used_non_hp_spaces: onaps,
+							hp_parking_spaces: aps, used_hp_spaces: oaps, 
+							total_spaces: atps,
+							total_used_spaces: atos, utilization: (atos/atps), 
+							cars: cnims,
+							lot_own: '',
+							park_fee: ''
+							};
+				data.push(total);
+			}
+		}
 		var myColDesc = [ { dataIndex: "station_name", header: "Station Name", style: "width:100px", cls : "colClass" },
 						{ dataIndex: "lot_id", header: "Lot ID", cls : "colClass" },
 						{ dataIndex: "line_id",  header: "Line ID", style: "width:100px", cls : "colClass"},
@@ -202,7 +230,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 						{ dataIndex: "utilization", header: "Utilization of All Parking Spaces", cls : "colClass", renderer: myformatter },
 						{ dataIndex: "cars", header: "Cars Not In Marked Spaces", cls : "colClass" },
 						{ dataIndex: "lot_own", header: "Lot Ownership", cls : "colClass" },
-						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" },
+						{ dataIndex: "park_fee", header: "Parking Fee", cls : "colClass" }
                     ];
                       
 		var myOptions = { divId:   "output_div_lots",
@@ -646,4 +674,45 @@ function initialize() {
     $("#mbta_stations").change(details_for_station);
 	$("#area").change(details_for_areas);
     
+	//4. Download Buttons 
+	// URL for WFS request to download Stations Data
+	var szTemp = szWFSserverRoot + '?';
+		szTemp += '&service=wfs';
+		szTemp += '&version=1.0.0';
+		szTemp += '&request=getfeature';
+		szTemp += '&typename=ctps_pg:ctps_pnr_station_points';
+	// List of propertynames (i.e., fields) to be downloaded from 2015 CMP express highway data.
+	// Note: Do NOT include the wkb_geometry field!
+		szTemp += "&propertyname=stan_addr,st_code,st_num,mode_rt,mode_cr,mode_brt,mode_other,lines,sdr_present,ddr_present,";
+		szTemp += "ribbon_present,key_present,invu_present,curve_present,doublelooppresent,singlelooppresent,hanger_present,other_present,";
+		szTemp += "rack_type,numberspaces,numberbikes,otherlocations_howmany,biketrail_yn,bikelanes_yn,sidewalks_yn,sidewalks_cond,";
+		szTemp += "sigints_yn,sigints_pedind_yn";
+		szTemp += '&outputformat=csv';
+
+	$('.spanForButtonWithLink').each(function() { 
+		$(this).click(function() {
+			location = $(this).find('a').attr('href');
+		});	
+	}); // end each() 
+	// Associate this URL with the anchor tag associated with button #1
+	var szUrl = szTemp;	
+	$("#downloadAnchorTag_1").attr("href", szUrl);
+	
+	// URL for WFS request for Parking Lots Data
+	var szTemp2 = szWFSserverRoot + '?';
+		szTemp2 += '&service=wfs';
+		szTemp2 += '&version=1.0.0';
+		szTemp2 += '&request=getfeature';
+		szTemp2 += "&typename=ctps_pg:ctps_pnr_lots_polygons";
+	// List of propertynames (i.e., fields) to be downloaded from LRTP airports data.
+	// Note: Do NOT include the wkb_geometry field!
+		szTemp2 += "&propertyname=station,st_num,lot_id,station_name,line_id,mode,permitrequired_1,permit_only_spaces_1,";
+		szTemp2 += "permit_only_vehicles_1,permit_only_space_utilization_1,parking_space_non_hp_1,used_spaces_non_hp_1,";
+		szTemp2 += "hp_parking_spaces_1,used_hp_parking_spaces_1,total_spaces_1,total_used_spaces_1,total_utilization_all_parking_1,";
+		szTemp2 += "publicparkingnohp_spaces_1,publicparkingnohp_vehicles_1,publicparkingnohp_utilization_1,cars_not_in_marked_spaces_1,";
+		szTemp2 += "lot_ownership_1,parking_fee_1";
+		szTemp2 += "&outputFormat=csv";
+	// Associate this URL with the anchor tag associated with button #2
+	var szUrl2 = szTemp2;	
+	$("#downloadAnchorTag_2").attr("href", szUrl2);
 } // initialize()
