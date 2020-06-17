@@ -30,7 +30,7 @@ var maxResolutionForLabelingVectorFeatures = 1200;
 //
 var getText = function(feature, resolution) {
   var maxResolution = maxResolutionForLabelingVectorFeatures;
-  var text = String(feature.get('lot_id'));
+  var text = "Lot " + String(feature.get('lot_id'));
   if (resolution > maxResolution) {
     text = '';
   }
@@ -312,6 +312,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     
     // Note that the LOTS data is put into accordion panel #2
     // Here, we open accordion panel #2 ... but we need to think if this is really what we want to do...
+	$('#accordion').accordion("option", "active", 1)
     $('#accordion').accordion("option", "active", 2)
 } // success_handler_for_lots_data()
 
