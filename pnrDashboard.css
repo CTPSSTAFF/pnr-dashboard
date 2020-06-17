@@ -80,3 +80,9 @@
 	font-weight: bold;
 	text-align: left;
 }
+#table_1_head{
+	font-size: 16px; /*12 pt font*/
+}
+#table_1_body{
+	font-size: 16px; /*12 pt font*/
+}
