@@ -312,8 +312,8 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
     
     // Note that the LOTS data is put into accordion panel #2
     // Here, we open accordion panel #2 ... but we need to think if this is really what we want to do...
-	$('#accordion').accordion("option", "active", 1)
-    $('#accordion').accordion("option", "active", 2)
+	$('#accordion1').accordion("option", "active", 0) //unneccessary because opened in stations success handler
+	$('#accordion2').accordion("option", "active", 0)
 } // success_handler_for_lots_data()
 
 // On-change event handler for combo box of Areas with stations???
@@ -469,7 +469,9 @@ function details_for_station(e) {
 								}
 				
                                 // And open the "Station and Lot Information" accordion panel (panel #1)
-                                $('#accordion').accordion("option", "active", 1)
+								//close panel #2 if open
+								$('#accordion1').accordion("option", "active",0)
+								$('#accordion2').accordion("option", "active",1)
                                 
                                 // Having retrieved and rendered the data for the STATION,
                                 // we now retrieve and render the data for any LOTS associated with it.
@@ -527,7 +529,9 @@ function details_for_station(e) {
 //
 function initialize() {  
     // 0. Initialize the jQueryUI accordion control
-    $('#accordion').accordion({ active: 0, collapsible : true, multiple : true, heightStyle : "content" });
+    $('#accordion0').accordion({ active: 0, collapsible : true, multiple : false, heightStyle : "content" });
+	$('#accordion1').accordion({ active: false, collapsible : true, multiple : false, heightStyle : "content" });
+	$('#accordion2').accordion({ active: false, collapsible : true, multiple : false, heightStyle : "content" });
 
     // 1. Initialize OpenLayers map, gets MassGIS basemap service properties by executing AJAX request
     $.ajax({ url: mgis_serviceUrls['topo_features'], jsonp: 'callback', dataType: 'jsonp', data: { f: 'json' }, 
@@ -763,7 +767,7 @@ function initialize() {
 		szTemp2 += '&version=1.0.0';
 		szTemp2 += '&request=getfeature';
 		szTemp2 += "&typename=ctps_pg:ctps_pnr_lots_polygons";
-	// List of propertynames (i.e., fields) to be downloaded from LRTP airports data.
+	// List of propertynames (i.e., fields) to be downloaded from lots data.
 	// Note: Do NOT include the wkb_geometry field!
 		szTemp2 += "&propertyname=station,st_num,lot_id,station_name,line_id,mode,permitrequired_1,permit_only_spaces_1,";
 		szTemp2 += "permit_only_vehicles_1,permit_only_space_utilization_1,parking_space_non_hp_1,used_spaces_non_hp_1,";
