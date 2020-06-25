@@ -183,7 +183,7 @@ function mode_concat(f1, f2, f3, f4) {
 //if null for a station field - used if not all fields are null
 function no_data_str(data) {
 	var out_str;
-	if (data == null || data == '') {
+	if (data === null || data === '') {
 		out_str = 'Unknown';
 	} else {
 		out_str = data
