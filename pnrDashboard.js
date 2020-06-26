@@ -235,6 +235,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
 		vSource.addFeature(aFeatures[i]);
 		
         props = aFeatures[i].getProperties();
+		//$('#year_p').html(props['year']);
 		var obj = {station_name: props['station_name'], lot_id: props['lot_id'], line_id: props['line_id'], mode: props['mode'],
 					pp_nohp_spaces: props['publicparkingnohp_spaces_1'],
 					pp_nohp_veh: props['publicparkingnohp_vehicles_1'], pp_nohp_util: props['publicparkingnohp_utilization_1'],
@@ -293,7 +294,7 @@ function success_handler_for_lots_data(data, textStatus, jqXHR) {
                       
 		var myOptions = { divId:   "output_div_lots",
                       tableId: "table_1",
-                      caption: "Lot Information for " +props['station_name']+ ':',
+                      caption: "Lot Information for " +props['station_name']+ ': (' + props['year']+')',
                       summary: "This table is really cool.",
                       colDesc: myColDesc,
 					  capcls: "capClass"
@@ -441,6 +442,7 @@ function details_for_station(e) {
                                 
                               
 								$('#station_name').html(props['stan_addr']);
+								$('#year').html(props['year']);
 								$('#lines').html(props['lines']);
 								$('#st_num').html(props['st_num']);
 								$('#st_code').html(props['st_code']);
@@ -464,7 +466,7 @@ function details_for_station(e) {
 									
 									
 								} else {
-									$('#no_data').html('No Bicycle Parking Data Collected at This Station')
+									$('#no_data').html('No Bicycle Parking Data Collected at this Station at this Time')
 									$('.hide').hide();
 								}
 				
@@ -749,7 +751,7 @@ function initialize() {
 		szTemp += "&propertyname=stan_addr,st_code,st_num,mode_rt,mode_cr,mode_brt,mode_other,lines,sdr_present,ddr_present,";
 		szTemp += "ribbon_present,key_present,invu_present,curve_present,doublelooppresent,singlelooppresent,hanger_present,other_present,";
 		szTemp += "rack_type,numberspaces,numberbikes,otherlocations_howmany,biketrail_yn,bikelanes_yn,sidewalks_yn,sidewalks_cond,";
-		szTemp += "sigints_yn,sigints_pedind_yn";
+		szTemp += "sigints_yn,sigints_pedind_yn,year";
 		szTemp += '&outputformat=csv';
 
 	$('.spanForButtonWithLink').each(function() { 
@@ -773,9 +775,20 @@ function initialize() {
 		szTemp2 += "permit_only_vehicles_1,permit_only_space_utilization_1,parking_space_non_hp_1,used_spaces_non_hp_1,";
 		szTemp2 += "hp_parking_spaces_1,used_hp_parking_spaces_1,total_spaces_1,total_used_spaces_1,total_utilization_all_parking_1,";
 		szTemp2 += "publicparkingnohp_spaces_1,publicparkingnohp_vehicles_1,publicparkingnohp_utilization_1,cars_not_in_marked_spaces_1,";
-		szTemp2 += "lot_ownership_1,parking_fee_1";
+		szTemp2 += "lot_ownership_1,parking_fee_1,year";
 		szTemp2 += "&outputFormat=csv";
 	// Associate this URL with the anchor tag associated with button #2
 	var szUrl2 = szTemp2;	
 	$("#downloadAnchorTag_2").attr("href", szUrl2);
+	
+	//help button
+	function popup(url) {
+		var popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=yes')
+	} // popup()
+
+	displayHelp = function() {
+		popup('pnrAppHelp.html');
+	}; // displayHelp()
+	//event handler
+	$('#help_button').bind('click', displayHelp);
 } // initialize()
