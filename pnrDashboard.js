@@ -190,6 +190,16 @@ function no_data_str(data) {
 	}
 	return out_str
 }
+//if null for station field - use for conditional columns
+function no_data_NA(data) {
+	var out_str;
+	if (data === null || data === '') {
+		out_str = 'N/A';
+	} else {
+		out_str = data
+	}
+	return out_str
+}
 //use to take decimals and turn into percents
 function myformatter(x) {
 	x = x*100;
@@ -457,9 +467,9 @@ function details_for_station(e) {
 									$('#bike_trail').html(neg_zero_null(props['biketrail_yn']));
 									$('#bike_lanes').html(neg_zero_null(props['bikelanes_yn']));
 									$('#sidewalks').html(neg_zero_null(props['sidewalks_yn']));
-									$('#sidewalk_cond').html(props['sidewalks_cond']);
+									$('#sidewalk_cond').html(no_data_NA(props['sidewalks_cond']));
 									$('#crosswalks').html(neg_zero_null(props['crosswalks_yn']));
-									$('#crosswalk_cond').html(no_data_str(props['crosswalks_cond']));
+									$('#crosswalk_cond').html(no_data_NA(props['crosswalks_cond']));
 									$('#signal').html(neg_zero_null(props['sigints_yn']));
 									$('#ped_signal').html(neg_zero_null(props['sigints_pedind_yn']));
 									//$('#').html();
