@@ -79,6 +79,9 @@ with the following parameters:
 * password: __pnr_viewer__    
 Use the default values of the other parameters.
 
+## TBD
+__Add instructions on enabling postgis extension to section below.___
+
 ## Moving the Data
 The process for moving a new or updated version of an application-specific database is as follows:
 1. If not already done, move/copy all the data for the application in question to a _dedicated_ PostgreSQL database.
