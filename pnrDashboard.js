@@ -1,5 +1,6 @@
 // Park-and-Ride Data Browser
 //
+// Author: Margaret Atkinson (matkinson@ctps.org)
 
 
 // URLs for MassGIS basemap layer services
@@ -88,18 +89,19 @@ oHighlightLayer.setStyle(myVectorStyle);
 
 // Varioius things for WMS and WFS layers
 // First, folderol to allow the app to run on appsrvr3 as well as "in the wild"
-szServerRoot = location.protocol + '//' + location.hostname;
+var szServerRoot = location.protocol + '//' + location.hostname;
+var group;
 if (location.hostname.includes('appsrvr3')) {   
     szServerRoot += ':8080/geoserver/';  
 	group = 'ctps_pg';
 } else if (location.hostname.includes('web-dev')){
 	szServerRoot += ':8080/geoserver/'; 
-	group = 'pnr-viewer';
+	group = 'pnr_viewer';
 } else {
     szServerRoot += '/maploc/';    
 }
-szWMSserverRoot = szServerRoot + '/wms'; 
-szWFSserverRoot = szServerRoot + '/wfs'; 
+var szWMSserverRoot = szServerRoot + '/wms'; 
+var szWFSserverRoot = szServerRoot + '/wfs'; 
 
 
 // OpenLayers 'map' object:
@@ -178,7 +180,7 @@ function mode_concat(f1, f2, f3, f4) {
 			//mode += modes_arr[i];
 			//mode += " ";
 		}
-		console.log(mode)
+		console.log(mode);
 	}
 	return mode;
 }//end mode_concat
@@ -190,9 +192,9 @@ function no_data_str(data) {
 	if (data === null || data === '') {
 		out_str = 'Unknown';
 	} else {
-		out_str = data
+		out_str = data;
 	}
-	return out_str
+	return out_str;
 }
 //if null for station field - use for conditional columns
 function no_data_NA(data) {
@@ -200,16 +202,16 @@ function no_data_NA(data) {
 	if (data === null || data === '') {
 		out_str = 'N/A';
 	} else {
-		out_str = data
+		out_str = data;
 	}
-	return out_str
+	return out_str;
 }
 //use to take decimals and turn into percents
 function myformatter(x) {
 	x = x*100;
 	x = x.toFixed(0);
 	x = x+'%';
-	return x
+	return x;
 }
 //if parking fee is zero, say permit only, else format
 function myDollar(x,y) {
@@ -219,8 +221,7 @@ function myDollar(x,y) {
 		x = x.toFixed(2);
 		x = '$'+x;
 	}
-	return x
-	
+	return x;
 }
 
 // 'success' handler for WFS request for LOTS data
@@ -529,12 +530,6 @@ function details_for_station(e) {
 							} // error handler for WFS request for STATION data
     });  // End of 'outer' WFS request - for STATION data
 } // details_for_station()
-
-
-
-
-
-
 
 
 // Function: initialize()
