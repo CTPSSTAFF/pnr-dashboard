@@ -90,15 +90,13 @@ oHighlightLayer.setStyle(myVectorStyle);
 // Varioius things for WMS and WFS layers
 // First, folderol to allow the app to run on appsrvr3 as well as "in the wild"
 var szServerRoot = location.protocol + '//' + location.hostname;
-var group;
+var nameSpace;
 if (location.hostname.includes('appsrvr3')) {   
     szServerRoot += ':8080/geoserver/';  
-	group = 'ctps_pg';
-} else if (location.hostname.includes('web-dev')){
-	szServerRoot += ':8080/geoserver/'; 
-	group = 'pnr_viewer';
+	nameSpace = 'ctps_pg';
 } else {
-    szServerRoot += '/maploc/';    
+    szServerRoot += '/maploc/';
+	nameSpace = 'pnr_viewer';
 }
 var szWMSserverRoot = szServerRoot + '/wms'; 
 var szWFSserverRoot = szServerRoot + '/wfs'; 
@@ -358,7 +356,7 @@ function details_for_areas(b) {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename='+group+':ctps_pnr_areas_w_stations';
+		szUrl += '&typename='+nameSpace+':ctps_pnr_areas_w_stations';
 		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
@@ -416,7 +414,7 @@ function details_for_station(e) {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename='+group+':ctps_pnr_station_points';
+		szUrl += '&typename='+nameSpace+':ctps_pnr_station_points';
 		szUrl += '&srsname=EPSG:3857';  // NOTE: We reproject the native geometry of the feature to the SRS of the map.
 		szUrl += '&outputformat=json';
 		szUrl += '&cql_filter=' + cqlFilter;
@@ -496,7 +494,7 @@ function details_for_station(e) {
                                 lotUrl += '&service=wfs';
                                 lotUrl += '&version=1.0.0';
                                 lotUrl += '&request=getfeature';
-                                lotUrl += '&typename='+group+':ctps_pnr_lots_polygons';
+                                lotUrl += '&typename='+nameSpace+':ctps_pnr_lots_polygons';
                                 lotUrl += '&srsname=EPSG:3857';  // Reproject native SRS of data to SRS of map
                                 lotUrl += '&outputformat=json';
                                 lotUrl += '&cql_filter=' + cqlFilter;
@@ -649,7 +647,7 @@ function initialize() {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename='+group+':ctps_pnr_station_points';
+		szUrl += '&typename='+nameSpace+':ctps_pnr_station_points';
         szUrl += '&propertyname=st_num,stan_addr,town_id'; // The only attribute we need to populate the stations combo box is the station name
 		szUrl += '&outputformat=json';
 	
@@ -697,7 +695,7 @@ function initialize() {
 		szUrl += '&service=wfs';
 		szUrl += '&version=1.0.0';
 		szUrl += '&request=getfeature';
-		szUrl += '&typename='+group+':ctps_pnr_areas_w_stations';
+		szUrl += '&typename='+nameSpace+':ctps_pnr_areas_w_stations';
         szUrl += '&propertyname=town,town_id';  // The only attribute we need to populate the stations combo box is the area name (town)
 		szUrl += '&outputformat=json';
 	$.ajax({ url		: szUrl,
@@ -754,7 +752,7 @@ function initialize() {
 		szTemp += '&service=wfs';
 		szTemp += '&version=1.0.0';
 		szTemp += '&request=getfeature';
-		szTemp += '&typename='+group+':ctps_pnr_station_points';
+		szTemp += '&typename='+nameSpace+':ctps_pnr_station_points';
 	// List of propertynames (i.e., fields) to be downloaded from 2015 CMP express highway data.
 	// Note: Do NOT include the wkb_geometry field!
 		szTemp += "&propertyname=stan_addr,st_code,st_num,mode_rt,mode_cr,mode_brt,mode_other,lines,sdr_present,ddr_present,";
@@ -777,7 +775,7 @@ function initialize() {
 		szTemp2 += '&service=wfs';
 		szTemp2 += '&version=1.0.0';
 		szTemp2 += '&request=getfeature';
-		szTemp2 += "&typename="+group+":ctps_pnr_lots_polygons";
+		szTemp2 += "&typename="+nameSpace+":ctps_pnr_lots_polygons";
 	// List of propertynames (i.e., fields) to be downloaded from lots data.
 	// Note: Do NOT include the wkb_geometry field!
 		szTemp2 += "&propertyname=station,st_num,lot_id,station_name,line_id,mode,permitrequired_1,permit_only_spaces_1,";
